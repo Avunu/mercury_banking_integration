@@ -1,6 +1,35 @@
 // Copyright (c) 2026, Avunu LLC and contributors
 // For license information, please see license.txt
 
+/**
+ * A row of `get_payroll_payout_preview` (mercury_integration/payouts/payroll.py).
+ * @typedef {object} PayrollPayoutPreviewRow
+ * @property {string} salary_slip
+ * @property {string} employee
+ * @property {string | null} employee_name
+ * @property {number} amount
+ * @property {string} recipient_status
+ * @property {string} payout_status
+ * @property {boolean} sendable
+ * @property {string | null} warning
+ */
+
+/**
+ * `mercury_payroll_progress`, published by `run_payroll_payouts` after each slip.
+ * @typedef {object} PayrollProgressEvent
+ * @property {string} payroll_entry
+ * @property {number} done
+ * @property {number} total
+ * @property {string} slip
+ */
+
+/**
+ * `mercury_payroll_done`, published by `run_payroll_payouts` at the end of the run.
+ * @typedef {object} PayrollDoneEvent
+ * @property {string} payroll_entry
+ * @property {string} summary
+ */
+
 frappe.ui.form.on("Payroll Entry", {
 	refresh(frm) {
 		if (frm.doc.docstatus !== 1) {
@@ -8,12 +37,12 @@ frappe.ui.form.on("Payroll Entry", {
 		}
 		frm.add_custom_button(__("Pay via Mercury"), () => mercury_payroll_dialog(frm), __("Mercury"));
 
-		frappe.realtime.on("mercury_payroll_progress", (data) => {
+		frappe.realtime.on("mercury_payroll_progress", (/** @type {PayrollProgressEvent} */ data) => {
 			if (data.payroll_entry === frm.doc.name) {
 				frappe.show_progress(__("Mercury Payouts"), data.done, data.total, data.slip);
 			}
 		});
-		frappe.realtime.on("mercury_payroll_done", (data) => {
+		frappe.realtime.on("mercury_payroll_done", (/** @type {PayrollDoneEvent} */ data) => {
 			if (data.payroll_entry === frm.doc.name) {
 				frappe.hide_progress();
 				frappe.show_alert({ message: data.summary, indicator: "green" });
@@ -23,12 +52,16 @@ frappe.ui.form.on("Payroll Entry", {
 	},
 });
 
+/**
+ * Previews the submitted slips and sends the ones the user ticks.
+ * @param {frappe.ui.form.Form<"Payroll Entry">} frm
+ */
 function mercury_payroll_dialog(frm) {
 	frappe
 		.call("mercury_integration.payouts.payroll.get_payroll_payout_preview", {
 			payroll_entry: frm.doc.name,
 		})
-		.then((response) => {
+		.then((/** @type {import("frappe-types").FrappeResponse<PayrollPayoutPreviewRow[]>} */ response) => {
 			const rows = response.message || [];
 			if (!rows.length) {
 				frappe.msgprint(__("No submitted salary slips found for this Payroll Entry."));
@@ -40,9 +73,10 @@ function mercury_payroll_dialog(frm) {
 				fields: [{ fieldname: "preview_html", fieldtype: "HTML" }],
 				primary_action_label: __("Send Payouts"),
 				primary_action() {
+					/** @type {string[]} */
 					const selected = [];
 					dialog.$wrapper.find("input.mercury-slip:checked").each(function () {
-						selected.push($(this).val());
+						selected.push(String($(this).val()));
 					});
 					if (!selected.length) {
 						frappe.msgprint(__("Select at least one salary slip."));
@@ -58,11 +92,17 @@ function mercury_payroll_dialog(frm) {
 					});
 				},
 			});
-			dialog.fields_dict.preview_html.$wrapper.html(render_mercury_preview(rows));
+			// an HTML field is a control (get_field's union also covers sections and columns)
+			const preview = /** @type {frappe.ui.form.Control} */ (dialog.get_field("preview_html"));
+			preview.$wrapper.html(render_mercury_preview(rows));
 			dialog.show();
 		});
 }
 
+/**
+ * @param {PayrollPayoutPreviewRow[]} rows
+ * @returns {string} the preview table's HTML
+ */
 function render_mercury_preview(rows) {
 	const body = rows
 		.map((row) => {
@@ -72,6 +112,8 @@ function render_mercury_preview(rows) {
 			const warning = row.warning
 				? `<div class="text-danger small">${frappe.utils.escape_html(row.warning)}</div>`
 				: "";
+			// @ts-expect-error format_currency is a frappe global (number_format.js:145) frappe-types 16.5.0 does not declare
+			const amount = format_currency(row.amount, "USD");
 			const recipient =
 				row.recipient_status === "Active"
 					? `<span class="indicator-pill green">${__("Active")}</span>`
@@ -80,7 +122,7 @@ function render_mercury_preview(rows) {
 				<td>${checkbox}</td>
 				<td><a href="/app/salary-slip/${row.salary_slip}">${row.salary_slip}</a></td>
 				<td>${frappe.utils.escape_html(row.employee_name || row.employee)}</td>
-				<td class="text-right">${format_currency(row.amount, "USD")}</td>
+				<td class="text-right">${amount}</td>
 				<td>${recipient}</td>
 				<td>${frappe.utils.escape_html(row.payout_status || "")}${warning}</td>
 			</tr>`;
