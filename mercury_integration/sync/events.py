@@ -138,8 +138,9 @@ def _process_transaction_event(request_doc, transaction_id: str) -> str | None:
 def process_event(integration_request: str, force: bool = False) -> None:
 	"""Dispatch one recorded event. Idempotent; safe to re-run with force."""
 	if frappe.session.user == "Guest":
-		# jobs enqueued from the guest webhook request inherit the Guest user
-		frappe.set_user("Administrator")
+		# Jobs enqueued from the guest webhook request inherit the Guest user. The event
+		# was HMAC-verified before it was recorded, and the job is a background worker.
+		frappe.set_user("Administrator")  # nosemgrep: frappe-setuser -- Guest-run job only, see above
 	request_doc = cast("IntegrationRequest", frappe.get_doc("Integration Request", integration_request))
 	if request_doc.status not in ("Queued", "Failed") and not force:
 		return

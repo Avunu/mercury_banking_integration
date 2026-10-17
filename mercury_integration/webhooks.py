@@ -47,6 +47,8 @@ def verify_signature(raw_body: bytes, header: str | None) -> bool:
 	return verify_mercury_signature(raw_body, header, get_webhook_secret())
 
 
+# Mercury calls this unauthenticated; the body is HMAC-verified against the stored secret first.
+# nosemgrep: guest-whitelisted-method -- the signed Mercury webhook, see above
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def webhook() -> str:
 	"""Fast-ack receiver: verify, record once, enqueue processing.

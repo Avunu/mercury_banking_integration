@@ -38,6 +38,7 @@ import re
 from typing import TYPE_CHECKING, cast
 
 import frappe
+from frappe import _
 from frappe.utils import flt
 from frappe.utils.synchronization import filelock
 
@@ -154,7 +155,10 @@ def _book_transfer(out_bt: frappe._dict, in_bt: frappe._dict, in_gl: str) -> str
 	posting_date = str(out_bt.date)
 
 	user = cast(str, frappe.session.user)
-	frappe.set_user("Administrator")
+	# Runs from the sync jobs and bench execute. erpnext's create_journal_entry_bts and
+	# reconcile_vouchers insert and save with the session user's permissions, which a
+	# webhook job (Guest) lacks, so book as Administrator and restore in finally.
+	frappe.set_user("Administrator")  # nosemgrep: frappe-setuser -- elevation for the booking only, see above
 	try:
 		# books the two-leg "Bank Entry" JE (source GL credited, destination GL
 		# debited) and reconciles the money-out side (is_new_voucher=True)
@@ -188,7 +192,7 @@ def _book_transfer(out_bt: frappe._dict, in_bt: frappe._dict, in_gl: str) -> str
 			is_new_voucher=False,
 		)
 	finally:
-		frappe.set_user(user)
+		frappe.set_user(user)  # nosemgrep: frappe-setuser -- restores the caller's user after the booking
 
 	cast("JournalEntry", frappe.get_doc("Journal Entry", journal_entry)).add_comment(
 		"Comment",
@@ -301,7 +305,7 @@ def reconcile_existing_transfers(dry_run: bool = True) -> dict:
 	"""
 	settings = get_settings()
 	if not dry_run and not (settings.enabled and settings.auto_reconcile_transfers):
-		frappe.throw("Enable Mercury Settings → Auto Reconcile Internal Transfers before applying")
+		frappe.throw(_("Enable Mercury Settings → Auto Reconcile Internal Transfers before applying"))
 
 	accounts = _account_by_last4()
 	rows = cast(

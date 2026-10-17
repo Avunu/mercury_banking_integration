@@ -20,15 +20,19 @@ Examples:
 from __future__ import annotations
 
 import csv
+import io
 import json
 import re
 from typing import TYPE_CHECKING, cast
 
 import frappe
+from frappe import _
 from frappe.utils import add_days, flt, getdate, now_datetime
 
 if TYPE_CHECKING:
 	import datetime
+
+	from frappe.core.doctype.file.file import File  # frappe-vulture:ignore
 
 
 def repoint_subscription_plans(from_gateway_account: str, to_gateway_account: str, dry_run: bool = True):
@@ -251,7 +255,7 @@ def merge_plaid_mercury_duplicates(
 	"""
 	accounts = frappe.get_all("Bank Account", filters={"mercury_account_id": ("!=", "")}, pluck="name")
 	if not accounts:
-		frappe.throw("No Bank Accounts carry a mercury_account_id")
+		frappe.throw(_("No Bank Accounts carry a mercury_account_id"))
 
 	checks = fetch_mercury_check_numbers(api_start) if fetch_check_numbers else {}
 
@@ -447,17 +451,27 @@ def merge_plaid_mercury_duplicates(
 	for m in unmatched_mercury:
 		log("unmatched-mercury", m=m, note="in overlap window but no Plaid twin (Plaid missed it)")
 
+	buffer = io.StringIO(newline="")
+	writer = csv.DictWriter(buffer, fieldnames=list(report_rows[0].keys()) if report_rows else ["action"])
+	writer.writeheader()
+	writer.writerows(report_rows)
 	stamp = now_datetime().strftime("%Y%m%d-%H%M%S")
-	report_path = frappe.get_site_path(
-		"private", "files", f"plaid-mercury-merge-{'dry-run' if dry_run else 'applied'}-{stamp}.csv"
+	# A private File, so frappe owns the path (private/files/) and the report can be
+	# downloaded from the desk instead of fetched from the server's disk.
+	report = cast(
+		"File",
+		frappe.get_doc(
+			{
+				"doctype": "File",
+				"file_name": f"plaid-mercury-merge-{'dry-run' if dry_run else 'applied'}-{stamp}.csv",
+				"is_private": 1,
+				"content": buffer.getvalue(),
+			}
+		).insert(ignore_permissions=True),
 	)
-	with open(report_path, "w", newline="") as handle:
-		writer = csv.DictWriter(handle, fieldnames=list(report_rows[0].keys()) if report_rows else ["action"])
-		writer.writeheader()
-		writer.writerows(report_rows)
 
 	summary.dry_run = dry_run
-	summary.report = report_path
+	summary.report = report.file_url
 	return summary
 
 

@@ -30,6 +30,7 @@ from decimal import Decimal
 from typing import TYPE_CHECKING, Any, NamedTuple, cast
 
 import frappe
+from frappe import _
 from frappe.utils import add_days, escape_html, today
 
 from mercury_integration.payouts.recipients import get_party_for_recipient
@@ -246,7 +247,7 @@ def reevaluate_unreconciled(from_date: str | None = None, dry_run: bool = True) 
 
 	settings = get_settings()
 	if not dry_run and not (settings.enabled and settings.enable_auto_journal):
-		frappe.throw("Enable Mercury Settings → Auto Journal Entries before applying")
+		frappe.throw(_("Enable Mercury Settings → Auto Journal Entries before applying"))
 
 	rows = cast(
 		"list[frappe._dict]",
