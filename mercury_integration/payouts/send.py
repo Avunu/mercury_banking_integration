@@ -172,19 +172,21 @@ def _attempt_number(reference_doctype: str, reference_name: str) -> int:
 
 
 def _last_attempt_at(reference_doctype: str, reference_name: str) -> str | None:
-	return cast(
-		"str | None",
-		frappe.db.get_value(
-			"Integration Request",
-			{
-				"integration_request_service": "Mercury",
-				"request_description": ATTEMPT_DESCRIPTION,
-				"reference_doctype": reference_doctype,
-				"reference_docname": reference_name,
-			},
-			"max(creation)",
-		),
+	# frappe v16 refuses SQL functions as field strings ("max(creation)"), so take
+	# the newest row instead
+	latest = frappe.get_all(
+		"Integration Request",
+		filters={
+			"integration_request_service": "Mercury",
+			"request_description": ATTEMPT_DESCRIPTION,
+			"reference_doctype": reference_doctype,
+			"reference_docname": reference_name,
+		},
+		pluck="creation",
+		order_by="creation desc",
+		limit=1,
 	)
+	return str(latest[0]) if latest else None
 
 
 def _set_payout_fields(reference_doctype: str, reference_name: str, values: dict) -> None:

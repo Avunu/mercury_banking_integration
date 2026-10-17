@@ -100,7 +100,10 @@ def register_mercury_gateway(settings) -> None:
 
 	if not settings.ar_clearing_account:
 		return
-	currency = frappe.db.get_value("Account", settings.ar_clearing_account, "account_currency") or "USD"
+	currency, company = cast(
+		"tuple[str | None, str]",
+		frappe.db.get_value("Account", settings.ar_clearing_account, ["account_currency", "company"]),
+	)
 	existing = cast(
 		"frappe._dict | None",
 		frappe.db.get_value(
@@ -121,7 +124,9 @@ def register_mercury_gateway(settings) -> None:
 			"doctype": "Payment Gateway Account",
 			"payment_gateway": GATEWAY_NAME,
 			"payment_account": settings.ar_clearing_account,
-			"currency": currency,
+			"currency": currency or "USD",
+			# erpnext v16 names the gateway account after the company and requires it
+			"company": company,
 			"payment_channel": "Email",
 			"is_default": 0,
 		}
