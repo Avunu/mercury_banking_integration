@@ -8,7 +8,7 @@ app_description = "Mercury Bank integration: billing, payroll ACH, bank sync, re
 app_email = "mail@avu.nu"
 app_license = "mit"
 
-required_apps = ["frappe", "erpnext", "payments", "hrms"]
+required_apps = ["erpnext", "payments", "hrms"]
 
 # regenerate doctype controller type annotations on migrate (strong typing)
 export_python_type_annotations = True

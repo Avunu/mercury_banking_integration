@@ -1,17 +1,80 @@
 {
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "typescript",
-    "unicorn",
-    "oxc"
-  ],
-  "categories": {
-    "correctness": "error"
-  },
-  "rules": {
-    "unicorn/no-empty-file": "off"
-  },
-  "env": {
-    "builtin": true
-  }
+	"$schema": "./node_modules/oxlint/configuration_schema.json",
+	"plugins": ["typescript", "unicorn", "oxc", "import"],
+	"categories": {
+		"correctness": "error",
+		"suspicious": "error",
+		"perf": "warn",
+		"pedantic": "off"
+	},
+	"env": {
+		"builtin": true,
+		"es2024": true,
+		"browser": true
+	},
+	"rules": {
+		"typescript/no-explicit-any": "error",
+		"typescript/ban-ts-comment": "error",
+		"typescript/consistent-type-imports": "error",
+		"no-console": [
+			"warn",
+			{
+				"allow": ["error", "warn"]
+			}
+		],
+		"import/no-cycle": "off",
+		"no-underscore-dangle": "off",
+		"unicorn/consistent-function-scoping": "off",
+		"unicorn/no-array-sort": "off"
+	},
+	"ignorePatterns": [
+		"mercury_integration/public/dist/**",
+		".frappe-nix/**",
+		".dev-dist/**",
+		"nix/**",
+		"docs-site/**",
+		"types/doctypes.d.ts"
+	],
+	"overrides": [
+		{
+			"files": ["scripts/**", "marketplace/**", "ci/**", "test/**"],
+			"env": {
+				"node": true
+			},
+			"rules": {
+				"no-console": "off",
+				"no-await-in-loop": "off",
+				"import/no-unassigned-import": "off"
+			}
+		},
+		{
+			"files": ["mercury_integration/public/js/*.bundle.ts", "mercury_integration/public/js/*.bundle.js"],
+			"rules": {
+				"import/no-unassigned-import": "off"
+			}
+		},
+		{
+			"files": [
+				"mercury_integration/mercury_integration/doctype/mercury_settings/mercury_settings.js",
+				"mercury_integration/public/js/employee.js",
+				"mercury_integration/public/js/mercury_recipient.js",
+				"mercury_integration/public/js/payment_entry.js",
+				"mercury_integration/public/js/payment_request.js",
+				"mercury_integration/public/js/payroll_entry.js",
+				"mercury_integration/public/js/supplier.js"
+			],
+			"globals": {
+				"frappe": "readonly",
+				"__": "readonly",
+				"cur_frm": "readonly",
+				"cur_list": "readonly",
+				"locals": "readonly",
+				"$": "readonly",
+				"jQuery": "readonly",
+				"moment": "readonly",
+				"erpnext": "readonly",
+				"hrms": "readonly"
+			}
+		}
+	]
 }
