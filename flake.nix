@@ -4,7 +4,7 @@
   description = "mercury_integration: Mercury Integration";
 
   inputs = {
-    frappe-nix.url = "github:Avunu/frappe-nix/a216ce95ce051fe0bc5b95f112fcb85529910ede";
+    frappe-nix.url = "github:Avunu/frappe-nix/d5d5556bb410fac85081e65915804c8e20c43e31";
     nixpkgs.follows = "frappe-nix/nixpkgs";
     frappe = {
       url = "github:frappe/frappe/version-16";

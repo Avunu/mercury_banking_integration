@@ -113,7 +113,9 @@ class TestPlaidMercuryMerge(MigrateTestCase):
 		self.addCleanup(self.remove_reports)
 
 	def remove_reports(self) -> None:
-		for path in self.reports:
+		# the test's rollback drops the File rows but leaves their CSVs in private/files
+		for file_url in self.reports:
+			path = frappe.get_site_path(file_url.lstrip("/"))
 			if os.path.exists(path):
 				os.remove(path)
 
@@ -160,6 +162,13 @@ class TestPlaidMercuryMerge(MigrateTestCase):
 			"transactions", {"transactions": [transaction_payload(id=uuid(1), checkNumber="006520")]}
 		)
 		dry = self.merge(dry_run=True)
+		report = frappe.get_doc("File", {"file_url": dry.report})
+		self.assertTrue(report.is_private)
+		self.assertTrue(cast("str", report.file_name).startswith("plaid-mercury-merge-dry-run-"))
+		content = report.get_content()
+		self.assertTrue(
+			(content.decode() if isinstance(content, bytes) else content).startswith("action,tier,")
+		)
 		self.assertEqual(
 			dry.by_tier,
 			{

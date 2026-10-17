@@ -45,7 +45,7 @@ integration-branch = "main"
 siblings = ["erpnext", "payments", "hrms"]
 
 [tool.frappe-nix.dev-shell]
-frappe-nix-url = "github:Avunu/frappe-nix/a216ce95ce051fe0bc5b95f112fcb85529910ede"
+frappe-nix-url = "github:Avunu/frappe-nix/d5d5556bb410fac85081e65915804c8e20c43e31"
 
 [tool.ty.environment]
 python-version = "3.14"

@@ -20,6 +20,7 @@ Examples:
 from __future__ import annotations
 
 import csv
+import io
 import json
 import re
 from typing import TYPE_CHECKING, cast
@@ -448,17 +449,24 @@ def merge_plaid_mercury_duplicates(
 	for m in unmatched_mercury:
 		log("unmatched-mercury", m=m, note="in overlap window but no Plaid twin (Plaid missed it)")
 
+	buffer = io.StringIO(newline="")
+	writer = csv.DictWriter(buffer, fieldnames=list(report_rows[0].keys()) if report_rows else ["action"])
+	writer.writeheader()
+	writer.writerows(report_rows)
 	stamp = now_datetime().strftime("%Y%m%d-%H%M%S")
-	report_path = frappe.get_site_path(
-		"private", "files", f"plaid-mercury-merge-{'dry-run' if dry_run else 'applied'}-{stamp}.csv"
-	)
-	with open(report_path, "w", newline="") as handle:
-		writer = csv.DictWriter(handle, fieldnames=list(report_rows[0].keys()) if report_rows else ["action"])
-		writer.writeheader()
-		writer.writerows(report_rows)
+	# A private File, so frappe owns the path (private/files/) and the report can be
+	# downloaded from the desk instead of fetched from the server's disk.
+	report = frappe.get_doc(
+		{
+			"doctype": "File",
+			"file_name": f"plaid-mercury-merge-{'dry-run' if dry_run else 'applied'}-{stamp}.csv",
+			"is_private": 1,
+			"content": buffer.getvalue(),
+		}
+	).insert(ignore_permissions=True)
 
 	summary.dry_run = dry_run
-	summary.report = report_path
+	summary.report = report.file_url
 	return summary
 
 

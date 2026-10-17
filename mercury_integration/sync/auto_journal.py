@@ -246,7 +246,10 @@ def _create_journal(
 	posting_date = cast("datetime", txn.posted_at or txn.created_at).date().isoformat()
 	accounts = ", ".join(leg.account for leg in legs)
 	user = cast(str, frappe.session.user)
-	frappe.set_user("Administrator")
+	# Runs from the sync jobs (scheduler, webhook, manager-only retry). erpnext's
+	# reconcile_vouchers saves the Bank Transaction with the session user's permissions,
+	# which a webhook job (Guest) lacks, so book as Administrator and restore below.
+	frappe.set_user("Administrator")  # nosemgrep: frappe-setuser -- elevation for the booking only, see above
 	# The JE is inserted before it is submitted, and validation that only runs at
 	# submit (cost centers, dimensions) would otherwise strand a draft behind the
 	# alert. Scoped to this booking, so the caller's Bank Transaction work survives.
@@ -270,7 +273,7 @@ def _create_journal(
 		)
 		return None
 	finally:
-		frappe.set_user(user)
+		frappe.set_user(user)  # nosemgrep: frappe-setuser -- restores the caller's user after the booking
 
 	journal_entry = cast(
 		"str | None", frappe.db.get_value("Journal Entry", {"cheque_no": txn.id, "docstatus": 1})
