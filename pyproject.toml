@@ -2,9 +2,9 @@
 name = "mercury_integration"
 authors = [{ name = "Avunu LLC", email = "mail@avu.nu" }]
 description = "Mercury Bank integration: billing, payroll ACH, bank sync, reconciliation, and GL coding"
-requires-python = ">=3.12"
-license = { file = "license.txt" }
-classifiers = ["License :: OSI Approved :: MIT License"]
+requires-python = ">=3.14"
+license = "MIT"
+license-files = ["license.txt"]
 readme = "README.md"
 dynamic = ["version"]
 dependencies = ["pydantic>=2.7,<3"]
@@ -19,19 +19,17 @@ responses = "~=0.23"
 
 [tool.bench.frappe-dependencies]
 frappe = ">=16.0.0,<17.0.0"
+erpnext = ">=16.0.0,<17.0.0"
+payments = ">=0.0.1,<1.0.0"
+hrms = ">=16.0.0,<17.0.0"
 
 [tool.ruff]
 line-length = 110
-target-version = "py312"
+target-version = "py314"
 
 [tool.ruff.lint]
-select = ["F", "E", "W", "I", "UP", "B", "RUF"]
-ignore = [
-    "B017", # assertRaises(Exception) - should be more specific
-    "E501", # line too long
-    "E741", # ambiguous variable name
-    "W191", # indentation contains tabs
-]
+select = ["F", "E", "W", "I", "UP", "B", "RUF", "SIM", "C4", "PIE", "PERF", "T20"]
+ignore = ["E501", "W191"]
 typing-modules = ["frappe.types.DF"]
 
 [tool.ruff.format]
@@ -39,5 +37,36 @@ quote-style = "double"
 indent-style = "tab"
 docstring-code-format = true
 
-[tool.ssort]
-skip = ["TYPE_CHECKING"]
+[tool.frappe-nix]
+schema = 1
+profile = "github:Avunu/frappe-standards-profile/main"
+frappe-major = 16
+siblings = ["erpnext", "payments", "hrms"]
+
+[tool.frappe-nix.dev-shell]
+frappe-nix-url = "github:Avunu/frappe-nix/e95f67f97de1322c89df9ffbc9218c31d4ca83ba"
+
+[tool.ty.environment]
+python-version = "3.14"
+
+[tool.ty.src]
+include = ["mercury_integration"]
+
+[tool.ty.terminal]
+error-on-warning = true
+
+[tool.coverage.run]
+omit = ["*/tests/*", "*/test_*.py", "*/patches/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+precision = 1
+exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError", "@(abc\\.)?abstractmethod"]
+fail_under = 0
+
+[tool.vulture]
+exclude = [".venv/", "node_modules/", ".frappe-nix/", ".dev-dist/"]
+
+[tool.test_utils.static-analysis]
+whitelist = ["frappe.*", "erpnext.*", "payments.*", "hrms.*"]

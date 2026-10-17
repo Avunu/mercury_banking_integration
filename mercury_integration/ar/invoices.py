@@ -33,7 +33,7 @@ from mercury_integration.utils.alerts import notify_failure
 if TYPE_CHECKING:
 	from datetime import date
 
-	from erpnext.accounts.doctype.payment_entry.payment_entry import PaymentEntry
+	from erpnext.accounts.doctype.payment_entry.payment_entry import PaymentEntry  # frappe-vulture:ignore
 	from erpnext.accounts.doctype.payment_request.payment_request import PaymentRequest
 
 	from mercury_integration.client.models import ArInvoice

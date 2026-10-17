@@ -22,7 +22,7 @@ import frappe
 from mercury_integration.client.webhook_signature import verify_mercury_signature
 
 if TYPE_CHECKING:
-	from frappe.utils.redis_wrapper import RedisWrapper
+	from frappe.utils.redis_wrapper import RedisWrapper  # frappe-vulture:ignore
 
 	from mercury_integration.mercury_integration.doctype.mercury_settings.mercury_settings import (
 		MercurySettings,
