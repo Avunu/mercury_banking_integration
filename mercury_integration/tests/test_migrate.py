@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import os
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import frappe
 
@@ -18,6 +18,9 @@ from mercury_integration.tests.utils import (
 	transaction_payload,
 	uuid,
 )
+
+if TYPE_CHECKING:
+	from frappe.core.doctype.file.file import File  # frappe-vulture:ignore
 
 DAY = "2026-08-01"
 
@@ -162,7 +165,7 @@ class TestPlaidMercuryMerge(MigrateTestCase):
 			"transactions", {"transactions": [transaction_payload(id=uuid(1), checkNumber="006520")]}
 		)
 		dry = self.merge(dry_run=True)
-		report = frappe.get_doc("File", {"file_url": dry.report})
+		report = cast("File", frappe.get_last_doc("File", filters={"file_url": dry.report}))
 		self.assertTrue(report.is_private)
 		self.assertTrue(cast("str", report.file_name).startswith("plaid-mercury-merge-dry-run-"))
 		content = report.get_content()

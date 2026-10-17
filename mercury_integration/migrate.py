@@ -32,6 +32,8 @@ from frappe.utils import add_days, flt, getdate, now_datetime
 if TYPE_CHECKING:
 	import datetime
 
+	from frappe.core.doctype.file.file import File  # frappe-vulture:ignore
+
 
 def repoint_subscription_plans(from_gateway_account: str, to_gateway_account: str, dry_run: bool = True):
 	"""Stage 3: repoint Subscription Plan.payment_gateway (Link → Payment Gateway Account)."""
@@ -456,14 +458,17 @@ def merge_plaid_mercury_duplicates(
 	stamp = now_datetime().strftime("%Y%m%d-%H%M%S")
 	# A private File, so frappe owns the path (private/files/) and the report can be
 	# downloaded from the desk instead of fetched from the server's disk.
-	report = frappe.get_doc(
-		{
-			"doctype": "File",
-			"file_name": f"plaid-mercury-merge-{'dry-run' if dry_run else 'applied'}-{stamp}.csv",
-			"is_private": 1,
-			"content": buffer.getvalue(),
-		}
-	).insert(ignore_permissions=True)
+	report = cast(
+		"File",
+		frappe.get_doc(
+			{
+				"doctype": "File",
+				"file_name": f"plaid-mercury-merge-{'dry-run' if dry_run else 'applied'}-{stamp}.csv",
+				"is_private": 1,
+				"content": buffer.getvalue(),
+			}
+		).insert(ignore_permissions=True),
+	)
 
 	summary.dry_run = dry_run
 	summary.report = report.file_url
