@@ -4,7 +4,7 @@
   description = "mercury_integration: Mercury Integration";
 
   inputs = {
-    frappe-nix.url = "github:Avunu/frappe-nix/d5d5556bb410fac85081e65915804c8e20c43e31";
+    frappe-nix.url = "github:Avunu/frappe-nix/de60612a38409a61004f3d311a9e2748d2a3d341";
     nixpkgs.follows = "frappe-nix/nixpkgs";
     frappe = {
       url = "github:frappe/frappe/version-16";
@@ -50,7 +50,6 @@
         systems = [
           "aarch64-darwin"
           "aarch64-linux"
-          "x86_64-darwin"
           "x86_64-linux"
         ];
 
@@ -60,7 +59,7 @@
             formatter = pkgs.nixfmt;
             frappe-nix = {
               enable = true;
-              siteName = "mercury-integration.localhost";
+              defaultSite = "mercury-integration.localhost";
               app = {
                 enable = true;
                 frappeVersion = "version-16";
