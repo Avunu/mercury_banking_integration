@@ -159,7 +159,7 @@ def _adopt_bank_account(bank_account: str, account: MercuryAccount) -> None:
 		values["bank_account_no"] = account.account_number
 	if account.routing_number:
 		values["branch_code"] = account.routing_number
-	frappe.db.set_value("Bank Account", bank_account, values)  # type: ignore[reportArgumentType]
+	frappe.db.set_value("Bank Account", bank_account, values)
 
 
 @frappe.whitelist()

@@ -53,6 +53,29 @@ UUID_SQL = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
 COUNTER_DATE_WINDOW_DAYS = 3
 BT_FIELDS = ("name", "date", "bank_account", "deposit", "withdrawal", "bank_party_name", "transaction_id")
 
+# The opposite leg on the counter account: same amount in the other direction, within
+# the date window. One statement per direction, so no SQL is assembled at run time.
+COUNTER_DEPOSIT_SQL = """
+	select name, date, bank_account, deposit, withdrawal, bank_party_name, transaction_id
+	from `tabBank Transaction`
+	where docstatus = 1 and transaction_type = 'internalTransfer'
+		and bank_account = %(account)s and name != %(self)s
+		and transaction_id regexp %(uuid)s
+		and abs(deposit - %(amount)s) < 0.005
+		and deposit > 0
+		and abs(datediff(date, %(date)s)) <= %(window)s
+"""
+COUNTER_WITHDRAWAL_SQL = """
+	select name, date, bank_account, deposit, withdrawal, bank_party_name, transaction_id
+	from `tabBank Transaction`
+	where docstatus = 1 and transaction_type = 'internalTransfer'
+		and bank_account = %(account)s and name != %(self)s
+		and transaction_id regexp %(uuid)s
+		and abs(withdrawal - %(amount)s) < 0.005
+		and withdrawal > 0
+		and abs(datediff(date, %(date)s)) <= %(window)s
+"""
+
 
 def _last4(value: str | None) -> str | None:
 	"""Trailing four digits of a Mercury account nickname / account number."""
@@ -94,20 +117,11 @@ def _find_counter_side(
 
 	want_deposit = flt(bt.withdrawal) > 0  # if this side paid out, the other received
 	amount = flt(bt.withdrawal) or flt(bt.deposit)
-	direction = "deposit > 0" if want_deposit else "withdrawal > 0"
 
 	candidates = cast(
 		"list[frappe._dict]",
 		frappe.db.sql(
-			f"""
-			select {", ".join(BT_FIELDS)} from `tabBank Transaction`
-			where docstatus = 1 and transaction_type = 'internalTransfer'
-				and bank_account = %(account)s and name != %(self)s
-				and transaction_id regexp %(uuid)s
-				and abs({"deposit" if want_deposit else "withdrawal"} - %(amount)s) < 0.005
-				and {direction}
-				and abs(datediff(date, %(date)s)) <= %(window)s
-			""",
+			COUNTER_DEPOSIT_SQL if want_deposit else COUNTER_WITHDRAWAL_SQL,
 			{
 				"account": counter.bank_account,
 				"self": bt.name,
@@ -293,8 +307,9 @@ def reconcile_existing_transfers(dry_run: bool = True) -> dict:
 	rows = cast(
 		"list[frappe._dict]",
 		frappe.db.sql(
-			f"""
-			select {", ".join(BT_FIELDS)} from `tabBank Transaction`
+			"""
+			select name, date, bank_account, deposit, withdrawal, bank_party_name, transaction_id
+			from `tabBank Transaction`
 			where docstatus = 1 and transaction_type = 'internalTransfer'
 				and transaction_id regexp %(uuid)s
 			order by date, name
@@ -342,8 +357,6 @@ def reconcile_existing_transfers(dry_run: bool = True) -> dict:
 		elif result.status == "ambiguous":
 			ambiguous.append(str(bt.name))
 
-	if not dry_run:
-		frappe.db.commit()
 	return {
 		"dry_run": dry_run,
 		"pairs_booked": len(booked),

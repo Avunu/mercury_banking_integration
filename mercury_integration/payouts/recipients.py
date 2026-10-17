@@ -88,7 +88,7 @@ def get_party_for_recipient(recipient_id: str) -> tuple[str, str] | None:
 
 
 def _set_recipient_fields(party_type: str, party: str, values: dict) -> None:
-	frappe.db.set_value(party_type, party, cast("str", values), update_modified=False)
+	frappe.db.set_value(party_type, party, values, update_modified=False)
 
 
 @frappe.whitelist()
@@ -348,9 +348,11 @@ def link_existing_recipients(
 	reported rather than guessed at. Idempotent: already-linked parties are
 	skipped, so re-running only picks up what is new. Pass ``parties`` to limit
 	the sweep to specific records (e.g. link one person from their form).
+	Nothing is committed here: the desk request or ``bench execute`` commits on
+	return.
 
 	bench --site erp.avunu.net execute \\
-		mercury_integration.payouts.link_existing_recipients \\
+		mercury_integration.payouts.recipients.link_existing_recipients \\
 		--kwargs "{'party_type': 'Employee', 'dry_run': False}"
 	"""
 	frappe.only_for(cast("tuple[str]", ("System Manager", "HR Manager", "Accounts Manager")))
@@ -432,8 +434,6 @@ def link_existing_recipients(
 					{"mercury_recipient_id": recipient.id, "mercury_recipient_status": "Active"},
 				)
 
-	if not dry_run:
-		frappe.db.commit()
 	return {
 		"dry_run": dry_run,
 		"party_type": party_type,

@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 
 SERVICE_NAME = "Mercury"
 WEBHOOK_METHOD_PATH = "/api/method/mercury_integration.webhooks.webhook"
-EVENTS_CURSOR_COMMIT_INTERVAL = 100
+EVENTS_PER_POLL = 500
 
 TRANSACTION_RESOURCE_TYPES = frozenset({"transaction"})
 BALANCE_RESOURCE_TYPES = frozenset(
@@ -99,10 +99,12 @@ def ingest_event(
 			**delivery,
 		)
 
+	# after commit: the worker must find the Integration Request this transaction wrote
 	frappe.enqueue(
 		"mercury_integration.sync.events.process_event",
 		integration_request=integration_request.name,
 		queue="short",
+		enqueue_after_commit=True,
 	)
 	return integration_request.name
 
@@ -179,20 +181,23 @@ def _model_payload(event) -> dict[str, Any]:
 	return event.model_dump(mode="json", by_alias=True, exclude_none=True)
 
 
-def _poll_events(settings) -> None:
+def _poll_events(settings) -> bool:
+	"""Ingest up to ``EVENTS_PER_POLL`` events after the cursor; True when more may follow."""
 	client = get_client(settings=settings, require_enabled=True)
 	cursor = settings.events_cursor or None
-	for seen, event in enumerate(client.list_events(start_after=cursor), start=1):
+	seen = 0
+	for event in client.list_events(start_after=cursor):
 		ingest_event(_model_payload(event), source="Poll")
 		cursor = event.id
-		if seen % EVENTS_CURSOR_COMMIT_INTERVAL == 0:
-			frappe.db.set_single_value("Mercury Settings", "events_cursor", cursor)
-			frappe.db.commit()
+		seen += 1
+		if seen >= EVENTS_PER_POLL:
+			break
 
 	frappe.db.set_single_value(
 		"Mercury Settings",
 		{"events_cursor": cursor, "events_last_polled_at": now_datetime()},
 	)
+	return seen >= EVENTS_PER_POLL
 
 
 def poll_events() -> None:
@@ -202,9 +207,19 @@ def poll_events() -> None:
 		return
 	try:
 		with filelock("mercury_poll_events", timeout=0):
-			_poll_events(settings)
+			more = _poll_events(settings)
 	except LockTimeoutError:
 		return  # a previous poll is still running
+	if more:
+		# A backlog (first enable, an outage) is drained in batches: each job commits
+		# its batch and the cursor when it ends, then the next one starts from there.
+		frappe.enqueue(
+			"mercury_integration.sync.events.poll_events",
+			queue="long",
+			job_id="mercury_poll_events",
+			deduplicate=True,
+			enqueue_after_commit=True,
+		)
 
 
 @frappe.whitelist()

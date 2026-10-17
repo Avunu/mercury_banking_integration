@@ -63,7 +63,9 @@ class PayoutContext(frappe._dict):
 	pass
 
 
-def _context(reference_doctype: str, reference_name: str) -> PayoutContext:  # type: ignore[reportReturnType]
+def _context(reference_doctype: str, reference_name: str) -> PayoutContext:
+	if reference_doctype not in PAYOUT_DOCTYPES:
+		frappe.throw(_("Unsupported payout reference: {0}").format(reference_doctype))
 	settings = get_settings()
 	if reference_doctype == "Salary Slip":
 		slip = frappe.db.get_value(
@@ -99,44 +101,41 @@ def _context(reference_doctype: str, reference_name: str) -> PayoutContext:  # t
 			external_memo=f"Payroll {slip.start_date} to {slip.end_date}",
 		)
 
-	if reference_doctype == "Payment Entry":
-		payment_entry = frappe.db.get_value(
-			"Payment Entry",
-			reference_name,
-			[
-				"name",
-				"docstatus",
-				"payment_type",
-				"party_type",
-				"party",
-				"party_name",
-				"paid_amount",
-				"reference_no",
-				"mercury_payment_status",
-			],
-			as_dict=True,
-		)
-		if not payment_entry:
-			frappe.throw(_("Payment Entry {0} not found").format(reference_name))
-		payment_entry = cast("frappe._dict", payment_entry)
-		if payment_entry.payment_type != "Pay" or payment_entry.party_type != "Supplier":
-			frappe.throw(_("Only supplier payments (type Pay) can be sent via Mercury"))
-		return PayoutContext(
-			doctype="Payment Entry",
-			name=payment_entry.name,
-			docstatus=payment_entry.docstatus,
-			status=payment_entry.mercury_payment_status,
-			party_type="Supplier",
-			party=payment_entry.party,
-			party_name=payment_entry.party_name,
-			amount=flt(payment_entry.paid_amount),
-			funding_bank_account=settings.vendor_funding_bank_account,
-			note=f"{payment_entry.name} {payment_entry.party_name or payment_entry.party}",
-			external_memo=payment_entry.reference_no or payment_entry.name,
-			reference_no=payment_entry.reference_no,
-		)
-
-	frappe.throw(_("Unsupported payout reference: {0}").format(reference_doctype))
+	payment_entry = frappe.db.get_value(
+		"Payment Entry",
+		reference_name,
+		[
+			"name",
+			"docstatus",
+			"payment_type",
+			"party_type",
+			"party",
+			"party_name",
+			"paid_amount",
+			"reference_no",
+			"mercury_payment_status",
+		],
+		as_dict=True,
+	)
+	if not payment_entry:
+		frappe.throw(_("Payment Entry {0} not found").format(reference_name))
+	payment_entry = cast("frappe._dict", payment_entry)
+	if payment_entry.payment_type != "Pay" or payment_entry.party_type != "Supplier":
+		frappe.throw(_("Only supplier payments (type Pay) can be sent via Mercury"))
+	return PayoutContext(
+		doctype="Payment Entry",
+		name=payment_entry.name,
+		docstatus=payment_entry.docstatus,
+		status=payment_entry.mercury_payment_status,
+		party_type="Supplier",
+		party=payment_entry.party,
+		party_name=payment_entry.party_name,
+		amount=flt(payment_entry.paid_amount),
+		funding_bank_account=settings.vendor_funding_bank_account,
+		note=f"{payment_entry.name} {payment_entry.party_name or payment_entry.party}",
+		external_memo=payment_entry.reference_no or payment_entry.name,
+		reference_no=payment_entry.reference_no,
+	)
 
 
 def _funding_account_id(context: PayoutContext) -> str:
@@ -189,7 +188,7 @@ def _last_attempt_at(reference_doctype: str, reference_name: str) -> str | None:
 
 
 def _set_payout_fields(reference_doctype: str, reference_name: str, values: dict) -> None:
-	frappe.db.set_value(reference_doctype, reference_name, cast("str", values), update_modified=False)
+	frappe.db.set_value(reference_doctype, reference_name, values, update_modified=False)
 
 
 def _is_duplicate_block(exc: Exception) -> bool:
@@ -362,7 +361,6 @@ def poll_approval_requests() -> None:
 			)
 		# approved → the resulting transaction (carrying requestId) arrives via
 		# events/webhooks and is adopted in on_transaction_event
-		frappe.db.commit()
 
 
 def on_transaction_event(txn: MercuryTransaction) -> None:

@@ -76,7 +76,7 @@ class MercurySettings(MercuryARGatewayMixin, Document):
 			client = get_client(settings=self)
 			next(iter(client.list_accounts()), None)
 		except Exception as exc:
-			frappe.throw(_("Mercury API token validation failed: {0}").format(exc))
+			frappe.throw(_("Mercury API token validation failed: {0}").format(str(exc)))
 
 	def on_update(self) -> None:
 		cast("RedisWrapper", frappe.cache)().delete_value(WEBHOOK_SECRET_CACHE_KEY)

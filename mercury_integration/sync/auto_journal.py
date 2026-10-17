@@ -139,7 +139,7 @@ def _cost_center(company: str, settings: MercurySettings) -> str | None:
 	fallback has to be screened, not just the configured override. Returning None
 	is safe: cost center is optional at the GL level (gl_entry.py:257).
 	"""
-	candidates = (cast("str | None", settings.default_cost_center), get_default_cost_center(company))
+	candidates = (settings.default_cost_center, get_default_cost_center(company))
 	for candidate in candidates:
 		if candidate and not frappe.get_cached_value("Cost Center", candidate, "is_group"):
 			return str(candidate)

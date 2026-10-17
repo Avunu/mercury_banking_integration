@@ -5,6 +5,9 @@
 migrations. Deliberate ops actions run via ``bench execute`` (never
 patches.txt) — see README.md for the full staged runbook.
 
+None of them commits: ``bench execute`` commits once the function returns, and
+an exception rolls the whole action back instead of leaving it half applied.
+
 Examples:
 	bench execute \
 		mercury_integration.migrate.repoint_subscription_plans \
@@ -39,7 +42,6 @@ def repoint_subscription_plans(from_gateway_account: str, to_gateway_account: st
 		return {"would_repoint": plans, "count": len(plans)}
 	for plan in plans:
 		frappe.db.set_value("Subscription Plan", plan, "payment_gateway", to_gateway_account)
-	frappe.db.commit()
 	return {"repointed": plans, "count": len(plans)}
 
 
@@ -56,7 +58,6 @@ def set_default_gateway_account(gateway_account: str, dry_run: bool = True):
 		if name != gateway_account:
 			frappe.db.set_value("Payment Gateway Account", name, "is_default", 0)
 	frappe.db.set_value("Payment Gateway Account", gateway_account, "is_default", 1)
-	frappe.db.commit()
 	return {"unset": [n for n in current_defaults if n != gateway_account], "set": gateway_account}
 
 
@@ -75,7 +76,6 @@ def snapshot_plaid_integration_ids():
 		frappe.get_doc("Plaid Settings").add_comment(
 			"Comment", text=f"mercury_integration cutover snapshot: {json.dumps(snapshot)}"
 		)
-		frappe.db.commit()
 	return snapshot
 
 
@@ -83,11 +83,6 @@ UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]
 SQL_UUID = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
 CHECK_NUMBER_RE = re.compile(r"^\d{1,10}$")
 PLAID_MERCHANT_RE = re.compile(r"(?:^|;)\s*Merchant name:\s*(.+?)\s*$", re.IGNORECASE)
-
-BT_FIELDS = (
-	"name, date, bank_account, deposit, withdrawal, status, transaction_id,"
-	" reference_number, transaction_type, bank_party_name, description, party_type, party"
-)
 
 
 def _norm(text: str | None) -> str:
@@ -263,7 +258,9 @@ def merge_plaid_mercury_duplicates(
 	mercury_rows = cast(
 		"list[frappe._dict]",
 		frappe.db.sql(
-			f"""select {BT_FIELDS} from `tabBank Transaction`
+			"""select name, date, bank_account, deposit, withdrawal, status, transaction_id,
+				reference_number, transaction_type, bank_party_name, description, party_type, party
+			from `tabBank Transaction`
 			where docstatus = 1 and bank_account in %(accounts)s and transaction_id regexp %(uuid)s""",
 			{"accounts": accounts, "uuid": SQL_UUID},
 			as_dict=True,
@@ -272,7 +269,9 @@ def merge_plaid_mercury_duplicates(
 	plaid_rows = cast(
 		"list[frappe._dict]",
 		frappe.db.sql(
-			f"""select {BT_FIELDS} from `tabBank Transaction`
+			"""select name, date, bank_account, deposit, withdrawal, status, transaction_id,
+				reference_number, transaction_type, bank_party_name, description, party_type, party
+			from `tabBank Transaction`
 			where docstatus = 1 and bank_account in %(accounts)s and transaction_id is not null
 			and transaction_id != '' and transaction_id not regexp %(uuid)s""",
 			{"accounts": accounts, "uuid": SQL_UUID},
@@ -403,7 +402,7 @@ def merge_plaid_mercury_duplicates(
 				frappe.db.set_value(
 					"Bank Transaction",
 					p.name,
-					{  # type: ignore[reportArgumentType]  # frappe set_value accepts a dict of fields
+					{
 						"transaction_id": m.transaction_id,
 						"transaction_type": m.transaction_type,
 						"bank_party_name": m.bank_party_name,
@@ -427,7 +426,7 @@ def merge_plaid_mercury_duplicates(
 			if not dry_run:
 				absorb(p.name)
 				if updates:
-					frappe.db.set_value("Bank Transaction", m.name, updates)  # type: ignore[reportArgumentType]  # frappe set_value accepts a dict of fields
+					frappe.db.set_value("Bank Transaction", m.name, updates)
 				frappe.get_doc("Bank Transaction", m.name).add_comment(
 					"Comment",
 					text=f"Plaid→Mercury merge ({tier}): absorbed Plaid duplicate {p.name}"
@@ -457,8 +456,6 @@ def merge_plaid_mercury_duplicates(
 		writer.writeheader()
 		writer.writerows(report_rows)
 
-	if not dry_run:
-		frappe.db.commit()
 	summary.dry_run = dry_run
 	summary.report = report_path
 	return summary
