@@ -1425,10 +1425,14 @@ name = "mercury-integration"
 source = { editable = "apps/mercury_integration" }
 dependencies = [
     { name = "pydantic" },
+    { name = "requests" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "pydantic", specifier = ">=2.7,<3" }]
+requires-dist = [
+    { name = "pydantic", specifier = ">=2.7,<3" },
+    { name = "requests", specifier = ">=2.32,<3" },
+]
 
 [[package]]
 name = "mercury-integration-bench"
