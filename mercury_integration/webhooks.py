@@ -62,22 +62,22 @@ def webhook() -> str:
 
 	try:
 		payload = json.loads(raw_body)
-	except ValueError:
-		frappe.throw("Invalid JSON body", frappe.ValidationError)
+	except ValueError as exc:
+		raise frappe.ValidationError("Invalid JSON body") from exc
 
 	from mercury_integration.sync.events import ingest_event
 
-	if not payload.get("id"):  # type: ignore[reportPossiblyUnbound]
+	if not payload.get("id"):
 		# no event id means ingest_event cannot record it — leave a trace instead
 		# of acking into the void (Mercury does not retry non-2xx except 429)
 		frappe.log_error(
 			title="Mercury webhook delivery without an event id",
-			message=frappe.as_json(payload),  # type: ignore[reportPossiblyUnbound]
+			message=frappe.as_json(payload),
 		)
 		return "ok"
 
 	ingest_event(
-		payload,  # type: ignore[reportPossiblyUnbound]
+		payload,
 		source="Webhook",
 		url=frappe.request.url,
 		request_headers=dict(frappe.request.headers),

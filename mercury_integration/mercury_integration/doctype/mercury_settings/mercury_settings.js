@@ -1,6 +1,13 @@
 // Copyright (c) 2026, Avunu LLC and contributors
 // For license information, please see license.txt
 
+/**
+ * What `preview_gl_codes` returns (mercury_integration/sync/gl_codes.py).
+ * @typedef {object} GlCodePreview
+ * @property {number} count how many account names export as GL codes
+ * @property {string[]} rejected the account names that cannot be exported
+ */
+
 frappe.ui.form.on("Mercury Settings", {
 	setup(frm) {
 		// A group cost center is rejected outright on any transaction, so never
@@ -55,32 +62,36 @@ const GL_CODE_UPLOAD_URL = "https://app.mercury.com/accounting/mapping/gl-codes"
 // CSV attachment, not JSON. Preview first so we can warn about skipped accounts,
 // which the download response has no way to carry.
 function export_gl_codes() {
-	frappe.call("mercury_integration.sync.gl_codes.preview_gl_codes").then(({ message }) => {
-		if (!message) {
-			return;
-		}
-		if (message.rejected.length) {
-			const items = message.rejected.map((name) => `<li>${frappe.utils.escape_html(name)}</li>`).join("");
-			frappe.msgprint({
-				title: __("Some accounts cannot be exported"),
-				indicator: "orange",
-				message:
-					__(
-						"These account names are shared by more than one account, or contain a comma, quote, or line break, so they cannot match a Mercury GL code verbatim. Rename them to include them:",
-					) + `<ul>${items}</ul>`,
-			});
-		}
-		if (!message.count) {
-			frappe.msgprint(__("No accounts are eligible for export."));
-			return;
-		}
-		open_url_post("/api/method/mercury_integration.sync.gl_codes.export_gl_codes", {});
-		open_gl_code_mapping(message.count);
-	});
+	frappe
+		.call("mercury_integration.sync.gl_codes.preview_gl_codes")
+		.then((/** @type {import("frappe-types").FrappeResponse<GlCodePreview>} */ { message }) => {
+			if (!message) {
+				return;
+			}
+			if (message.rejected.length) {
+				const items = message.rejected.map((name) => `<li>${frappe.utils.escape_html(name)}</li>`).join("");
+				frappe.msgprint({
+					title: __("Some accounts cannot be exported"),
+					indicator: "orange",
+					message:
+						__(
+							"These account names are shared by more than one account, or contain a comma, quote, or line break, so they cannot match a Mercury GL code verbatim. Rename them to include them:",
+						) + `<ul>${items}</ul>`,
+				});
+			}
+			if (!message.count) {
+				frappe.msgprint(__("No accounts are eligible for export."));
+				return;
+			}
+			// @ts-expect-error open_url_post is a frappe global (urllib.js:48) frappe-types 16.5.0 does not declare
+			open_url_post("/api/method/mercury_integration.sync.gl_codes.export_gl_codes", {});
+			open_gl_code_mapping(message.count);
+		});
 }
 
 // The tab is opened from a promise callback, outside the click's gesture stack, so
 // popup blockers routinely swallow it. Detect that and leave a clickable path.
+/** @param {number} count how many GL codes were exported */
 function open_gl_code_mapping(count) {
 	const tab = window.open(GL_CODE_UPLOAD_URL, "_blank", "noopener");
 	if (tab) {

@@ -13,6 +13,7 @@ category-CRUD and recipient-invite endpoints from docs.mercury.com.
 
 from __future__ import annotations
 
+import enum
 from collections.abc import Iterator
 from datetime import date, datetime
 from decimal import Decimal
@@ -65,7 +66,14 @@ __all__ = [
 	"SendMoneyApproval",
 ]
 
-_OMIT = object()
+
+class _Omit(enum.Enum):
+	"""Sentinel for "leave this field as it is" (``None`` means clear it)."""
+
+	OMIT = enum.auto()
+
+
+_OMIT = _Omit.OMIT
 
 
 def _iso_date(value: date | datetime | str | None) -> str | None:
@@ -143,8 +151,8 @@ class MercuryClient:
 		self,
 		transaction_id: str,
 		*,
-		note: str | None = _OMIT,  # type: ignore[assignment]
-		category_id: str | None = _OMIT,  # type: ignore[assignment]
+		note: str | _Omit | None = _OMIT,
+		category_id: str | _Omit | None = _OMIT,
 	) -> MercuryTransaction:
 		"""PATCH note/category: omit a kwarg to keep the current value, pass None to clear."""
 		body: dict[str, Any] = {}

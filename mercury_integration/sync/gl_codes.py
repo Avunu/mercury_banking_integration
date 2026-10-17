@@ -116,7 +116,7 @@ def resolve_legs(txn: MercuryTransaction, settings: MercurySettings) -> tuple[li
 	if not pairs:
 		return [], None
 
-	company = cast("str | None", settings.company)
+	company = settings.company
 	if not company:
 		return [], "Mercury Settings has no Company set"
 

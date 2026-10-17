@@ -6,7 +6,7 @@ app_title = "Mercury Integration"
 app_publisher = "Avunu LLC"
 app_description = "Mercury Bank integration: billing, payroll ACH, bank sync, reconciliation, and GL coding"
 app_email = "mail@avu.nu"
-app_license = "mit"
+app_license = "MIT"
 
 required_apps = ["erpnext", "payments", "hrms"]
 
