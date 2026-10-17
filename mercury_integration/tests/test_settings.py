@@ -97,6 +97,9 @@ class TestMercurySettings(MercuryTestCase):
 			"Payment Gateway Account", {"payment_gateway": "Mercury"}, "payment_account"
 		)
 		self.assertEqual(account, self.fixtures.clearing_gl)
+		# the company had no default gateway account; registering must not make Mercury it
+		company = frappe.db.get_value("Account", self.fixtures.clearing_gl, "company")
+		self.assertFalse(frappe.db.exists("Payment Gateway Account", {"company": company, "is_default": 1}))
 
 		# a new clearing account moves the existing gateway account instead of adding one
 		set_settings(ar_clearing_account=self.fixtures.savings_gl)

@@ -119,7 +119,7 @@ def register_mercury_gateway(settings) -> None:
 				"Payment Gateway Account", str(existing.name), "payment_account", settings.ar_clearing_account
 			)
 		return
-	frappe.get_doc(
+	gateway_account = frappe.get_doc(
 		{
 			"doctype": "Payment Gateway Account",
 			"payment_gateway": GATEWAY_NAME,
@@ -131,3 +131,7 @@ def register_mercury_gateway(settings) -> None:
 			"is_default": 0,
 		}
 	).insert(ignore_permissions=True)
+	if gateway_account.get("is_default"):
+		# erpnext makes the first gateway account of a company its default on validate.
+		# Moving the default is a separate, deliberate step (migrate.set_default_gateway_account).
+		gateway_account.db_set("is_default", 0)
