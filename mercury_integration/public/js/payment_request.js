@@ -3,11 +3,7 @@
 
 frappe.ui.form.on("Payment Request", {
 	refresh(frm) {
-		if (
-			frm.doc.docstatus !== 1 ||
-			frm.doc.payment_gateway !== "Mercury" ||
-			frm.doc.mercury_invoice_id
-		) {
+		if (frm.doc.docstatus !== 1 || frm.doc.payment_gateway !== "Mercury" || frm.doc.mercury_invoice_id) {
 			return;
 		}
 		frm.add_custom_button(

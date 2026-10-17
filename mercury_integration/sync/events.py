@@ -20,6 +20,7 @@ out-of-order or duplicate processing converges — no version guard needed.
 
 from __future__ import annotations
 
+import contextlib
 import json
 from typing import TYPE_CHECKING, Any, cast
 
@@ -179,11 +180,9 @@ def _model_payload(event) -> dict[str, Any]:
 def _poll_events(settings) -> None:
 	client = get_client(settings=settings, require_enabled=True)
 	cursor = settings.events_cursor or None
-	seen = 0
-	for event in client.list_events(start_after=cursor):
+	for seen, event in enumerate(client.list_events(start_after=cursor), start=1):
 		ingest_event(_model_payload(event), source="Poll")
 		cursor = event.id
-		seen += 1
 		if seen % EVENTS_CURSOR_COMMIT_INTERVAL == 0:
 			frappe.db.set_single_value("Mercury Settings", "events_cursor", cursor)
 			frappe.db.commit()
@@ -217,10 +216,8 @@ def register_webhook_endpoint() -> str:
 	client = get_client(settings=settings, require_enabled=True)
 
 	if settings.webhook_endpoint_id:
-		try:
+		with contextlib.suppress(Exception):  # stale/foreign id — safe to replace
 			client.delete_webhook(settings.webhook_endpoint_id)
-		except Exception:
-			pass  # stale/foreign id — safe to replace
 
 	webhook = client.create_webhook(url=get_url(WEBHOOK_METHOD_PATH))
 	if not webhook.secret:

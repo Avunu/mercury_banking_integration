@@ -60,9 +60,7 @@ function export_gl_codes() {
 			return;
 		}
 		if (message.rejected.length) {
-			const items = message.rejected
-				.map((name) => `<li>${frappe.utils.escape_html(name)}</li>`)
-				.join("");
+			const items = message.rejected.map((name) => `<li>${frappe.utils.escape_html(name)}</li>`).join("");
 			frappe.msgprint({
 				title: __("Some accounts cannot be exported"),
 				indicator: "orange",

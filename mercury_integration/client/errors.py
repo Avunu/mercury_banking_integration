@@ -43,7 +43,7 @@ class MercuryAPIError(MercuryError):
 		"""Best-effort parse of the (unstructured) JSON error body."""
 		try:
 			parsed = json.loads(self.body)
-		except (ValueError, TypeError):
+		except ValueError, TypeError:
 			return None
 		return parsed if isinstance(parsed, dict) else None
 
