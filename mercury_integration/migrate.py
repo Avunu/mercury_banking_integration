@@ -25,6 +25,7 @@ import re
 from typing import TYPE_CHECKING, cast
 
 import frappe
+from frappe import _
 from frappe.utils import add_days, flt, getdate, now_datetime
 
 if TYPE_CHECKING:
@@ -251,7 +252,7 @@ def merge_plaid_mercury_duplicates(
 	"""
 	accounts = frappe.get_all("Bank Account", filters={"mercury_account_id": ("!=", "")}, pluck="name")
 	if not accounts:
-		frappe.throw("No Bank Accounts carry a mercury_account_id")
+		frappe.throw(_("No Bank Accounts carry a mercury_account_id"))
 
 	checks = fetch_mercury_check_numbers(api_start) if fetch_check_numbers else {}
 

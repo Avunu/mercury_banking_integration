@@ -38,6 +38,7 @@ import re
 from typing import TYPE_CHECKING, cast
 
 import frappe
+from frappe import _
 from frappe.utils import flt
 from frappe.utils.synchronization import filelock
 
@@ -301,7 +302,7 @@ def reconcile_existing_transfers(dry_run: bool = True) -> dict:
 	"""
 	settings = get_settings()
 	if not dry_run and not (settings.enabled and settings.auto_reconcile_transfers):
-		frappe.throw("Enable Mercury Settings → Auto Reconcile Internal Transfers before applying")
+		frappe.throw(_("Enable Mercury Settings → Auto Reconcile Internal Transfers before applying"))
 
 	accounts = _account_by_last4()
 	rows = cast(

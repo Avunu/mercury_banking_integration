@@ -96,7 +96,7 @@ def get_payroll_payout_preview(payroll_entry: str) -> list[dict]:
 	return rows
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def initiate_payroll_payouts(payroll_entry: str, salary_slips: str | list[str]) -> None:
 	"""Queue the background send run for the selected slips."""
 	frappe.only_for(cast("tuple[str]", PAYROLL_ROLES))
