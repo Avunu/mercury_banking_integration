@@ -316,17 +316,67 @@ class TestEvents(MercuryTestCase):
 		events.poll_events()
 		self.assertIn("start_after=evt-b", self.api.calls("GET", "events")[-1].request.url)
 
-	def test_a_full_batch_queues_the_next_poll_after_commit(self):
-		self._patch_object(events, "EVENTS_PER_POLL", 2)
-		self.api.get(
-			"events",
-			{"events": [event_payload(id=f"evt-{n}") for n in range(3)]},
+	def test_a_backlog_keeps_queueing_polls_while_each_one_is_running(self):
+		"""Run frappe's real enqueue (dedupe check included) with only redis faked."""
+		from unittest.mock import MagicMock
+
+		from frappe.utils import background_jobs
+		from rq.job import JobStatus
+
+		def enqueue(method: str, **kwargs: Any) -> Any:
+			if method.endswith("events.poll_events"):
+				return background_jobs.enqueue(method, **kwargs)
+			return None  # process_event jobs are covered elsewhere
+
+		self.enqueue.side_effect = enqueue
+		queue = MagicMock(count=0)
+		self._patch_object(background_jobs, "get_queue", return_value=queue)
+		running: dict[str, Any] = {}
+		self._patch_object(
+			background_jobs,
+			"get_job",
+			side_effect=lambda job_id: running.get(background_jobs.create_job_id(job_id)),
 		)
-		events.poll_events()
+		after_commit: list[Any] = []
+
+		def defer(callback: Any) -> None:
+			if callback.__qualname__ == "enqueue.<locals>.enqueue_call":
+				after_commit.append(callback)  # other after-commit hooks (caches) are not ours
+
+		self._patch_object(frappe.db, "after_commit", MagicMock(add=defer))
+		self._patch_object(events, "EVENTS_PER_POLL", 2)
+
+		def run_poll(ids: range) -> str:
+			"""Poll once, commit, and mark the queued continuation as the running job."""
+			after_commit.clear()
+			self.api.get("events", {"events": [event_payload(id=f"evt-{n}") for n in ids]})
+			events.poll_events()
+			self.assertEqual(len(after_commit), 1)  # queued only once the batch commits
+			after_commit[0]()
+			job_id = queue.enqueue_call.call_args.kwargs["job_id"]
+			running.clear()
+			running[job_id] = MagicMock(id=job_id, get_status=MagicMock(return_value=JobStatus.STARTED))
+			return job_id
+
+		first = run_poll(range(3))  # the cron run: a full batch
 		self.assertEqual(frappe.db.get_single_value("Mercury Settings", "events_cursor"), "evt-1")
-		poll = [c for c in self.enqueue.call_args_list if c.args[0].endswith("events.poll_events")]
-		self.assertEqual(len(poll), 1)
-		self.assertTrue(poll[0].kwargs["enqueue_after_commit"])
+		second = run_poll(range(2, 5))  # the continuation, still STARTED while it queues the next
+		self.assertEqual(frappe.db.get_single_value("Mercury Settings", "events_cursor"), "evt-3")
+		self.assertNotEqual(first, second)
+		self.assertEqual(queue.enqueue_call.call_count, 2)
+
+		# the same cursor queued twice is still deduplicated
+		running[second].get_status.return_value = JobStatus.QUEUED
+		frappe.db.set_single_value("Mercury Settings", "events_cursor", "evt-1")
+		after_commit.clear()
+		self.api.get("events", {"events": [event_payload(id=f"evt-{n}") for n in range(2, 5)]})
+		events.poll_events()
+		self.assertEqual(after_commit, [])
+
+		# a short batch ends the chain
+		self.api.get("events", {"events": [event_payload(id="evt-9")]})
+		events.poll_events()
+		self.assertEqual(after_commit, [])
 
 	def test_poll_is_off_while_disabled_and_skips_while_running(self):
 		from frappe.utils.file_lock import LockTimeoutError

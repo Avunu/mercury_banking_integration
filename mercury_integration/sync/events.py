@@ -44,7 +44,9 @@ if TYPE_CHECKING:
 
 SERVICE_NAME = "Mercury"
 WEBHOOK_METHOD_PATH = "/api/method/mercury_integration.webhooks.webhook"
-EVENTS_PER_POLL = 500
+# Kept small: a poll's Integration Requests stay uncommitted until its job ends, and a
+# webhook delivering the same event in that window cannot see them (see ingest_event).
+EVENTS_PER_POLL = 100
 
 TRANSACTION_RESOURCE_TYPES = frozenset({"transaction"})
 BALANCE_RESOURCE_TYPES = frozenset(
@@ -181,8 +183,11 @@ def _model_payload(event) -> dict[str, Any]:
 	return event.model_dump(mode="json", by_alias=True, exclude_none=True)
 
 
-def _poll_events(settings) -> bool:
-	"""Ingest up to ``EVENTS_PER_POLL`` events after the cursor; True when more may follow."""
+def _poll_events(settings) -> str | None:
+	"""Ingest up to ``EVENTS_PER_POLL`` events after the cursor.
+
+	Returns the new cursor when the batch was full (more may follow), else None.
+	"""
 	client = get_client(settings=settings, require_enabled=True)
 	cursor = settings.events_cursor or None
 	seen = 0
@@ -197,7 +202,7 @@ def _poll_events(settings) -> bool:
 		"Mercury Settings",
 		{"events_cursor": cursor, "events_last_polled_at": now_datetime()},
 	)
-	return seen >= EVENTS_PER_POLL
+	return cursor if seen >= EVENTS_PER_POLL else None
 
 
 def poll_events() -> None:
@@ -207,16 +212,19 @@ def poll_events() -> None:
 		return
 	try:
 		with filelock("mercury_poll_events", timeout=0):
-			more = _poll_events(settings)
+			next_cursor = _poll_events(settings)
 	except LockTimeoutError:
 		return  # a previous poll is still running
-	if more:
+	if next_cursor:
 		# A backlog (first enable, an outage) is drained in batches: each job commits
 		# its batch and the cursor when it ends, then the next one starts from there.
+		# The job id names the cursor it starts after: frappe checks deduplication when
+		# enqueue() is called, while this job is still STARTED, so a fixed id would
+		# drop every continuation queued from inside a continuation.
 		frappe.enqueue(
 			"mercury_integration.sync.events.poll_events",
 			queue="long",
-			job_id="mercury_poll_events",
+			job_id=f"mercury_poll_events::{next_cursor}",
 			deduplicate=True,
 			enqueue_after_commit=True,
 		)
