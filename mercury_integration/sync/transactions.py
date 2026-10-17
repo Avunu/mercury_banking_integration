@@ -23,7 +23,9 @@ from mercury_integration.sync.client_factory import get_client, get_settings
 from mercury_integration.utils.alerts import notify_failure
 
 if TYPE_CHECKING:
-	from erpnext.accounts.doctype.bank_transaction.bank_transaction import BankTransaction
+	from erpnext.accounts.doctype.bank_transaction.bank_transaction import (  # frappe-vulture:ignore
+		BankTransaction,
+	)
 
 	from mercury_integration.client.models import MercuryTransaction
 

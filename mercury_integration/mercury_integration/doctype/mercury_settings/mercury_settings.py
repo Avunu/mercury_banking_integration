@@ -13,7 +13,7 @@ from frappe.utils import cint
 from mercury_integration.ar.gateway import MercuryARGatewayMixin
 
 if TYPE_CHECKING:
-	from frappe.utils.redis_wrapper import RedisWrapper
+	from frappe.utils.redis_wrapper import RedisWrapper  # frappe-vulture:ignore
 
 WEBHOOK_SECRET_CACHE_KEY = "mercury_webhook_secret"
 

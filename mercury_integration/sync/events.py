@@ -37,8 +37,10 @@ from mercury_integration.utils.alerts import notify_failure
 if TYPE_CHECKING:
 	from datetime import datetime
 
-	from frappe.integrations.doctype.integration_request.integration_request import IntegrationRequest
-	from frappe.utils.redis_wrapper import RedisWrapper
+	from frappe.integrations.doctype.integration_request.integration_request import (  # frappe-vulture:ignore
+		IntegrationRequest,
+	)
+	from frappe.utils.redis_wrapper import RedisWrapper  # frappe-vulture:ignore
 
 SERVICE_NAME = "Mercury"
 WEBHOOK_METHOD_PATH = "/api/method/mercury_integration.webhooks.webhook"

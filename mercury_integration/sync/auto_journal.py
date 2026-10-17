@@ -40,7 +40,7 @@ from mercury_integration.utils.alerts import notify_failure
 if TYPE_CHECKING:
 	from datetime import datetime
 
-	from erpnext.accounts.doctype.journal_entry.journal_entry import JournalEntry
+	from erpnext.accounts.doctype.journal_entry.journal_entry import JournalEntry  # frappe-vulture:ignore
 
 	from mercury_integration.client.models import MercuryTransaction
 	from mercury_integration.mercury_integration.doctype.mercury_settings.mercury_settings import (
