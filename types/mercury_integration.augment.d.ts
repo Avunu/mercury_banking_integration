@@ -1,3 +1,6 @@
+// Copyright (c) 2026, Avunu LLC and contributors
+// For license information, please see license.txt
+
 // Globals this app defines for its own desk scripts. A script file (no imports or
 // exports), so these declarations are global. frappe's globals are not declared
 // here: they come from frappe-types.

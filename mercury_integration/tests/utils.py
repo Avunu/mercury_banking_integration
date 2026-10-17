@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import json
 from typing import TYPE_CHECKING, Any, ClassVar, NamedTuple, cast
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import frappe
 import responses
@@ -22,7 +22,9 @@ from frappe.utils import today
 from mercury_integration.client.http import PRODUCTION_BASE_URL
 
 if TYPE_CHECKING:
-	from frappe.utils.redis_wrapper import RedisWrapper
+	from unittest.mock import MagicMock  # frappe-vulture:ignore
+
+	from frappe.utils.redis_wrapper import RedisWrapper  # frappe-vulture:ignore
 
 COMPANY = "_Test Company 1"  # USD, United States (erpnext's bootstrap test data)
 ABBR = "_TC1"
@@ -362,6 +364,27 @@ class MercuryTestCase(IntegrationTestCase):
 		super().setUpClass()
 		cls.fixtures = make_fixtures()
 
+	@staticmethod
+	def _clear_caches() -> None:
+		from mercury_integration.mercury_integration.doctype.mercury_settings.mercury_settings import (
+			WEBHOOK_SECRET_CACHE_KEY,
+		)
+
+		frappe.clear_document_cache("Mercury Settings", "Mercury Settings")
+		cast("RedisWrapper", frappe.cache).delete_value(WEBHOOK_SECRET_CACHE_KEY)
+
+	def _patch(self, target: str, *args: Any, **kwargs: Any) -> Any:
+		patcher = patch(target, *args, **kwargs)
+		mocked = patcher.start()
+		self.addCleanup(patcher.stop)
+		return mocked
+
+	def _patch_object(self, target: Any, attribute: str, *args: Any, **kwargs: Any) -> Any:
+		patcher = patch.object(target, attribute, *args, **kwargs)
+		mocked = patcher.start()
+		self.addCleanup(patcher.stop)
+		return mocked
+
 	def setUp(self) -> None:
 		super().setUp()
 		frappe.set_user("Administrator")
@@ -388,27 +411,6 @@ class MercuryTestCase(IntegrationTestCase):
 		frappe.db.rollback(save_point=SAVEPOINT)
 		self._clear_caches()
 		super().tearDown()
-
-	@staticmethod
-	def _clear_caches() -> None:
-		from mercury_integration.mercury_integration.doctype.mercury_settings.mercury_settings import (
-			WEBHOOK_SECRET_CACHE_KEY,
-		)
-
-		frappe.clear_document_cache("Mercury Settings", "Mercury Settings")
-		cast("RedisWrapper", frappe.cache).delete_value(WEBHOOK_SECRET_CACHE_KEY)
-
-	def _patch(self, target: str, *args: Any, **kwargs: Any) -> Any:
-		patcher = patch(target, *args, **kwargs)
-		mocked = patcher.start()
-		self.addCleanup(patcher.stop)
-		return mocked
-
-	def _patch_object(self, target: Any, attribute: str, *args: Any, **kwargs: Any) -> Any:
-		patcher = patch.object(target, attribute, *args, **kwargs)
-		mocked = patcher.start()
-		self.addCleanup(patcher.stop)
-		return mocked
 
 	def configure(self, **values: Any):
 		return configure_settings(self.api, **values)

@@ -31,8 +31,10 @@ from mercury_integration.tests.utils import (
 )
 
 if TYPE_CHECKING:
-	from erpnext.accounts.doctype.bank_account.bank_account import BankAccount
-	from frappe.integrations.doctype.integration_request.integration_request import IntegrationRequest
+	from erpnext.accounts.doctype.bank_account.bank_account import BankAccount  # frappe-vulture:ignore
+	from frappe.integrations.doctype.integration_request.integration_request import (  # frappe-vulture:ignore
+		IntegrationRequest,
+	)
 
 
 def txn(**overrides: Any) -> MercuryTransaction:
