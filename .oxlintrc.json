@@ -28,7 +28,7 @@
 		"unicorn/no-array-sort": "off"
 	},
 	"ignorePatterns": [
-		"mercury_integration/public/dist/**",
+		"mercury_banking_integration/public/dist/**",
 		".frappe-nix/**",
 		".dev-dist/**",
 		"nix/**",
@@ -48,20 +48,23 @@
 			}
 		},
 		{
-			"files": ["mercury_integration/public/js/*.bundle.ts", "mercury_integration/public/js/*.bundle.js"],
+			"files": [
+				"mercury_banking_integration/public/js/*.bundle.ts",
+				"mercury_banking_integration/public/js/*.bundle.js"
+			],
 			"rules": {
 				"import/no-unassigned-import": "off"
 			}
 		},
 		{
 			"files": [
-				"mercury_integration/mercury_integration/doctype/mercury_settings/mercury_settings.js",
-				"mercury_integration/public/js/employee.js",
-				"mercury_integration/public/js/mercury_recipient.js",
-				"mercury_integration/public/js/payment_entry.js",
-				"mercury_integration/public/js/payment_request.js",
-				"mercury_integration/public/js/payroll_entry.js",
-				"mercury_integration/public/js/supplier.js"
+				"mercury_banking_integration/mercury_integration/doctype/mercury_settings/mercury_settings.js",
+				"mercury_banking_integration/public/js/employee.js",
+				"mercury_banking_integration/public/js/mercury_recipient.js",
+				"mercury_banking_integration/public/js/payment_entry.js",
+				"mercury_banking_integration/public/js/payment_request.js",
+				"mercury_banking_integration/public/js/payroll_entry.js",
+				"mercury_banking_integration/public/js/supplier.js"
 			],
 			"globals": {
 				"frappe": "readonly",
