@@ -112,7 +112,7 @@ repos:
     hooks:
       - id: validate_frappe_project
       - id: validate_patches
-        args: [--app, mercury_integration]
+        args: [--app, mercury_banking_integration]
       - id: static_analysis
         # Its own walk of the checkout skips the dev bench, devenv's state and the other unmanaged directories.
         entry: |-
@@ -137,7 +137,7 @@ repos:
         args: ["."]
       - id: validate_doctype_python_types
       - id: validate_copyright
-        args: [--app, mercury_integration]
+        args: [--app, mercury_banking_integration]
         # Never stamp a managed file (its header is line 1, or it is the profile's), or a generated one (its
         # freshness diff would fail), nor a script: a stamp above `#!/usr/bin/env node` breaks it (scripts/ and
         # ci/ hold the node tools).

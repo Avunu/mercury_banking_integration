@@ -4,13 +4,17 @@
 	"compilerOptions": {
 		"composite": true
 	},
-	"include": ["mercury_integration/**/*.js", "types/doctypes.d.ts", "types/mercury_integration.augment.d.ts"],
+	"include": [
+		"mercury_banking_integration/**/*.js",
+		"types/doctypes.d.ts",
+		"types/mercury_banking_integration.augment.d.ts"
+	],
 	"exclude": [
 		"node_modules",
 		"**/*.bundle.js",
 		"**/public/dist/**",
-		"mercury_integration/www/**",
+		"mercury_banking_integration/www/**",
 		"**/web_form/**",
-		"mercury_integration/templates/**"
+		"mercury_banking_integration/templates/**"
 	]
 }

@@ -7,8 +7,8 @@ members = [
     "erpnext",
     "frappe",
     "hrms",
-    "mercury-integration",
-    "mercury-integration-bench",
+    "mercury-banking-integration",
+    "mercury-banking-integration-bench",
     "payments",
 ]
 overrides = [
@@ -1421,8 +1421,8 @@ wheels = [
 ]
 
 [[package]]
-name = "mercury-integration"
-source = { editable = "apps/mercury_integration" }
+name = "mercury-banking-integration"
+source = { editable = "apps/mercury_banking_integration" }
 dependencies = [
     { name = "pydantic" },
     { name = "requests" },
@@ -1435,7 +1435,7 @@ requires-dist = [
 ]
 
 [[package]]
-name = "mercury-integration-bench"
+name = "mercury-banking-integration-bench"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
