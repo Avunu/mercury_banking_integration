@@ -9,7 +9,7 @@ Mercury Bank integration for ERPNext: client billing (Accounts Receivable), payr
 
 - **`mercury_banking_integration/client/`** — frappe-free typed Mercury API client (Pydantic v2, mirrors the official mercury-go SDK: retries on 408/429/5xx, Retry-After honoring, cursor pagination, tolerant enum parsing, body-field idempotency keys). Testable standalone: `pytest mercury_banking_integration/tests/`.
 
-- **One new doctype** — `Mercury Settings` (Single). All other state lives on core doctypes via app-owned custom fields (`mercury_banking_integration/custom/`):
+- **One new doctype** — `Mercury Settings` (Single). All other state lives on core doctypes via app-owned custom fields (`mercury_banking_integration/mercury_integration/custom/`):
 
   | Doctype                     | Fields                                                                      | Purpose                                                      |
   | --------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------ |
