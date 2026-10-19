@@ -1,5 +1,5 @@
 [project]
-name = "mercury_integration"
+name = "mercury_banking_integration"
 authors = [{ name = "Avunu LLC", email = "mail@avu.nu" }]
 description = "Mercury Bank integration: billing, payroll ACH, bank sync, reconciliation, and GL coding"
 requires-python = ">=3.14"
@@ -44,14 +44,11 @@ frappe-major = 16
 integration-branch = "main"
 siblings = ["erpnext", "payments", "hrms"]
 
-[tool.frappe-nix.dev-shell]
-frappe-nix-url = "github:Avunu/frappe-nix/de60612a38409a61004f3d311a9e2748d2a3d341"
-
 [tool.ty.environment]
 python-version = "3.14"
 
 [tool.ty.src]
-include = ["mercury_integration"]
+include = ["mercury_banking_integration"]
 
 [tool.ty.terminal]
 error-on-warning = true
@@ -70,4 +67,5 @@ fail_under = 97
 exclude = [".venv/", "node_modules/", ".frappe-nix/", ".dev-dist/", ".devenv/", ".direnv/"]
 
 [tool.test_utils.static-analysis]
-whitelist = ["frappe.*", "erpnext.*", "payments.*", "hrms.*"]
+# The rename shim in hooks.py keeps the old dotted paths on purpose.
+whitelist = ["frappe.*", "erpnext.*", "payments.*", "hrms.*", "mercury_integration.*"]

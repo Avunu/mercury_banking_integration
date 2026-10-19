@@ -1,15 +1,15 @@
 <!-- Copyright (c) 2026, Avunu LLC and contributors
 For license information, please see license.txt-->
 
-# Mercury Integration
+# Mercury Banking for ERPNext
 
 Mercury Bank integration for ERPNext: client billing (Accounts Receivable), payroll & vendor ACH payouts, bank transaction sync + reconciliation, Chart of Accounts ↔ Mercury GL Code mapping, automatic journal entries, and transaction attachment import.
 
 ## Architecture
 
-- **`mercury_integration/client/`** — frappe-free typed Mercury API client (Pydantic v2, mirrors the official mercury-go SDK: retries on 408/429/5xx, Retry-After honoring, cursor pagination, tolerant enum parsing, body-field idempotency keys). Testable standalone: `pytest mercury_integration/tests/`.
+- **`mercury_banking_integration/client/`** — frappe-free typed Mercury API client (Pydantic v2, mirrors the official mercury-go SDK: retries on 408/429/5xx, Retry-After honoring, cursor pagination, tolerant enum parsing, body-field idempotency keys). Testable standalone: `pytest mercury_banking_integration/tests/`.
 
-- **One new doctype** — `Mercury Settings` (Single). All other state lives on core doctypes via app-owned custom fields (`mercury_integration/custom/`):
+- **One new doctype** — `Mercury Settings` (Single). All other state lives on core doctypes via app-owned custom fields (`mercury_banking_integration/mercury_integration/custom/`):
 
   | Doctype                     | Fields                                                                      | Purpose                                                      |
   | --------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------ |
@@ -22,7 +22,7 @@ Mercury Bank integration for ERPNext: client billing (Accounts Receivable), payr
 
 - **Core log reuse** — every inbound event (webhook push, poller, or replay) _and_ every outbound attempt → Integration Request (service "Mercury"; inbound carries `is_remote_request = 1`, the event id in `request_id`, the channel in `request_description`, and — for webhooks — the request `url` and `request_headers`; retention via Log Settings). Frappe's _Webhook Request Log_ is intentionally not used: core writes it only for its own **outbound** Webhook doctype.
 
-- **Event flow** — guest webhook endpoint (`/api/method/mercury_integration.webhooks.webhook`, HMAC `Mercury-Signature`) fast-acks and enqueues; a \*/15 events-API poller is a complete standalone channel (webhooks don't exist in the Mercury sandbox). Handlers refetch authoritative state, so duplicates/out-of-order deliveries converge.
+- **Event flow** — guest webhook endpoint (`/api/method/mercury_banking_integration.webhooks.webhook`, HMAC `Mercury-Signature`) fast-acks and enqueues; a \*/15 events-API poller is a complete standalone channel (webhooks don't exist in the Mercury sandbox). Handlers refetch authoritative state, so duplicates/out-of-order deliveries converge.
 
 ## Setup
 
@@ -39,10 +39,10 @@ Mercury Bank integration for ERPNext: client billing (Accounts Receivable), payr
 
     ```bash
     # dry run (default) — review, then re-run with dry_run False
-    bench --site <site> execute mercury_integration.payouts.recipients.link_existing_recipients \
+    bench --site <site> execute mercury_banking_integration.payouts.recipients.link_existing_recipients \
       --kwargs "{'party_type': 'Employee'}"
     # limit to specific records; collision checks still consider everyone
-    bench --site <site> execute mercury_integration.payouts.recipients.link_existing_recipients \
+    bench --site <site> execute mercury_banking_integration.payouts.recipients.link_existing_recipients \
       --kwargs "{'parties': ['HR-EMP-00008'], 'dry_run': False}"
     ```
 
@@ -56,7 +56,7 @@ Mercury Bank integration for ERPNext: client billing (Accounts Receivable), payr
 
 ## Known constraints
 
-- **GL coding fires no event**: Mercury's transaction update events cover `status`/`postedAt`/`amount`/`categoryData` only — nothing under `glAllocations`. The hourly sync re-reads just `SYNC_OVERLAP_DAYS` (3) past `last_integration_date`, so a transaction coded more than ~3 days after it posts is invisible to both live channels. The daily `tasks.backfill_auto_journals` sweep closes that gap: it re-runs the auto-journal gate over every submitted-but-unreconciled Mercury Bank Transaction within _Daily Backfill (Days)_, books what became codeable, and mails one digest of anything GL-coded but unbookable. Zero disables it. One API call per unreconciled transaction, so keep the window to what you actually still code. On demand: `bench execute mercury_integration.sync.gl_codes.reevaluate_unreconciled --kwargs "{'dry_run': False}"` (dry-run by default, unbounded unless given `from_date`). **The JE posts to the original transaction date**, so sweeping a long backlog can land entries in a closed period.
+- **GL coding fires no event**: Mercury's transaction update events cover `status`/`postedAt`/`amount`/`categoryData` only — nothing under `glAllocations`. The hourly sync re-reads just `SYNC_OVERLAP_DAYS` (3) past `last_integration_date`, so a transaction coded more than ~3 days after it posts is invisible to both live channels. The daily `tasks.backfill_auto_journals` sweep closes that gap: it re-runs the auto-journal gate over every submitted-but-unreconciled Mercury Bank Transaction within _Daily Backfill (Days)_, books what became codeable, and mails one digest of anything GL-coded but unbookable. Zero disables it. One API call per unreconciled transaction, so keep the window to what you actually still code. On demand: `bench execute mercury_banking_integration.sync.gl_codes.reevaluate_unreconciled --kwargs "{'dry_run': False}"` (dry-run by default, unbounded unless given `from_date`). **The JE posts to the original transaction date**, so sweeping a long backlog can land entries in a closed period.
 - **No ACH pulls**: Mercury AR is payer-initiated (pay-page link + overdue reminders) — unlike GoCardless mandate auto-charges.
 - **USD only** for the AR gateway.
 - **24h duplicate guard**: Mercury hard-blocks same recipient+account+amount within 24h regardless of idempotency key (surfaced in the payroll preview).
@@ -67,14 +67,14 @@ Mercury Bank integration for ERPNext: client billing (Accounts Receivable), payr
 This app uses `pre-commit` (ruff, pyupgrade, ssort, oxlint/oxfmt, agritheory test\_utils). Enable it:
 
 ```bash
-cd apps/mercury_integration
+cd apps/mercury_banking_integration
 pre-commit install
 ```
 
 Client unit tests (no site needed):
 
 ```bash
-../../env/bin/python -m pytest mercury_integration/tests/ -q
+../../env/bin/python -m pytest mercury_banking_integration/tests/ -q
 ```
 
 ## License
