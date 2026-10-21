@@ -1,7 +1,7 @@
 [project]
 name = "mercury_banking_integration"
 authors = [{ name = "Avunu LLC", email = "mail@avu.nu" }]
-description = "Mercury Bank integration: billing, payroll ACH, bank sync, reconciliation, and GL coding"
+description = "Mercury bank sync, ACH payouts, invoicing and GL coding for ERPNext"
 requires-python = ">=3.14"
 license = "MIT"
 license-files = ["license.txt"]
