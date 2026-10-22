@@ -522,7 +522,7 @@ class TestVendorPayouts(PayoutTestCase):
 		# payment_entry.js decides whether Pay via Mercury shows; it must offer every
 		# status the server accepts, Blocked - Duplicate included
 		script = (Path(send.__file__).parent.parent / "public/js/payment_entry.js").read_text()
-		match = re.search(r"\[([^\]]*)\]\.includes\(doc\.mercury_payment_status", script)
+		match = re.search(r"\[([^\]]*)\]\.includes\(\s*doc\.mercury_payment_status", script)
 		assert match
 		self.assertEqual(
 			set(re.findall(r'"([^"]*)"', match.group(1))),
