@@ -31,24 +31,27 @@
  */
 
 frappe.ui.form.on("Payroll Entry", {
-	refresh(frm) {
-		if (frm.doc.docstatus !== 1) {
-			return;
-		}
-		frm.add_custom_button(__("Pay via Mercury"), () => mercury_payroll_dialog(frm), __("Mercury"));
-
+	// setup runs once per form, so the handlers are registered once. Registered on
+	// refresh, they piled up and each run's alert and reload repeated per refresh.
+	setup(frm) {
 		frappe.realtime.on("mercury_payroll_progress", (/** @type {PayrollProgressEvent} */ data) => {
-			if (data.payroll_entry === frm.doc.name) {
+			if (data.payroll_entry === frm.doc?.name) {
 				frappe.show_progress(__("Mercury Payouts"), data.done, data.total, data.slip);
 			}
 		});
 		frappe.realtime.on("mercury_payroll_done", (/** @type {PayrollDoneEvent} */ data) => {
-			if (data.payroll_entry === frm.doc.name) {
+			if (data.payroll_entry === frm.doc?.name) {
 				frappe.hide_progress();
 				frappe.show_alert({ message: data.summary, indicator: "green" });
 				frm.reload_doc();
 			}
 		});
+	},
+	refresh(frm) {
+		if (frm.doc.docstatus !== 1) {
+			return;
+		}
+		frm.add_custom_button(__("Pay via Mercury"), () => mercury_payroll_dialog(frm), __("Mercury"));
 	},
 });
 
