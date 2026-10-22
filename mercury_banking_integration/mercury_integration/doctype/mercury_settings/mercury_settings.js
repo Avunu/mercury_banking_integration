@@ -91,10 +91,13 @@ function export_gl_codes() {
 
 // The tab is opened from a promise callback, outside the click's gesture stack, so
 // popup blockers routinely swallow it. Detect that and leave a clickable path.
+// No "noopener" feature: with it window.open always returns null, which would read as
+// blocked. The opener link is cut by hand instead.
 /** @param {number} count how many GL codes were exported */
 function open_gl_code_mapping(count) {
-	const tab = window.open(GL_CODE_UPLOAD_URL, "_blank", "noopener");
+	const tab = window.open(GL_CODE_UPLOAD_URL, "_blank");
 	if (tab) {
+		tab.opener = null;
 		frappe.show_alert({
 			message: __("Exported {0} GL codes — upload the CSV in the new tab.", [count]),
 			indicator: "green",
