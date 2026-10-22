@@ -140,7 +140,6 @@ Moving an existing site from Plaid and GoCardless to this app is described step 
 - **No ACH pulls.** Mercury cannot debit a customer's account, so the customer pays from the pay link (with reminders when overdue).
 - **Mercury's 24-hour duplicate rule.** Mercury refuses a payment to the same payee, from the same account, for the same amount within 24 hours, whatever the idempotency key. The payroll preview warns about it. A supplier Payment Entry that Mercury blocked this way does not show _Pay via Mercury_ again, so it has to be sent another way.
 - **Card payments are matched by estimate.** Card payouts arrive with fees taken off, and the deposit is matched to its invoice within an estimated fee range. Leave **Accept Credit Card** off until you have checked a real settlement.
-- **Export GL Codes** also shows an "Upload the GL codes" message with a link, even when Mercury's upload page did open in a new tab.
 
 <!-- frappe-nix:begin support -->
 
