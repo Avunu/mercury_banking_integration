@@ -10,6 +10,8 @@ the approval poll and transaction events.
 
 from __future__ import annotations
 
+import re
+from pathlib import Path
 from typing import cast
 
 import frappe
@@ -515,6 +517,23 @@ class TestVendorPayouts(PayoutTestCase):
 		frappe.set_user("Guest")
 		with self.assertRaises(frappe.PermissionError):
 			vendor.pay_payment_entry_via_mercury(payment_entry)
+
+	def test_a_blocked_supplier_payment_offers_the_button_again(self):
+		# payment_entry.js decides whether Pay via Mercury shows; it must offer every
+		# status the server accepts, Blocked - Duplicate included
+		script = (Path(send.__file__).parent.parent / "public/js/payment_entry.js").read_text()
+		match = re.search(r"\[([^\]]*)\]\.includes\(\s*doc\.mercury_payment_status", script)
+		assert match
+		self.assertEqual(
+			set(re.findall(r'"([^"]*)"', match.group(1))),
+			{status or "" for status in send.SENDABLE_STATUSES},
+		)
+
+		self.link_recipient("Supplier", SUPPLIER, "rec-v")
+		payment_entry = make_supplier_payment()
+		frappe.db.set_value("Payment Entry", payment_entry, "mercury_payment_status", "Blocked - Duplicate")
+		self.api.post(f"account/{CHECKING_ID}/transactions", transaction_payload(id=uuid(42), amount=-250))
+		self.assertEqual(vendor.pay_payment_entry_via_mercury(payment_entry), {"sent": uuid(42)})
 
 	def test_a_different_bank_account_is_noted(self):
 		self.link_recipient("Supplier", SUPPLIER, "rec-v")
