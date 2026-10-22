@@ -19,7 +19,8 @@ frappe.ui.form.on("Payment Entry", {
 			doc.payment_type === "Pay" &&
 			doc.party_type === "Supplier" &&
 			!doc.clearance_date &&
-			["", "Failed", "Rejected", "Cancelled"].includes(doc.mercury_payment_status || "");
+			// send.py SENDABLE_STATUSES: the server turns a Blocked - Duplicate retry away until 24h have passed
+			["", "Failed", "Rejected", "Cancelled", "Blocked - Duplicate"].includes(doc.mercury_payment_status || "");
 		if (!sendable) {
 			return;
 		}

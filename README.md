@@ -138,7 +138,7 @@ Moving an existing site from Plaid and GoCardless to this app is described step 
 - **Attachments are copied only with an automatic journal entry.** A transaction that is not booked by the app keeps its attachments in Mercury.
 - **US dollars only.** The invoicing gateway accepts only USD, and automatic journal entries post amounts without exchange rates.
 - **No ACH pulls.** Mercury cannot debit a customer's account, so the customer pays from the pay link (with reminders when overdue).
-- **Mercury's 24-hour duplicate rule.** Mercury refuses a payment to the same payee, from the same account, for the same amount within 24 hours, whatever the idempotency key. The payroll preview warns about it. A supplier Payment Entry that Mercury blocked this way does not show _Pay via Mercury_ again, so it has to be sent another way.
+- **Mercury's 24-hour duplicate rule.** Mercury refuses a payment to the same payee, from the same account, for the same amount within 24 hours, whatever the idempotency key. The payroll preview warns about it. A supplier Payment Entry that Mercury blocked this way can be sent again with _Pay via Mercury_ once 24 hours have passed since the last attempt.
 - **Card payments are matched by estimate.** Card payouts arrive with fees taken off, and the deposit is matched to its invoice within an estimated fee range. Leave **Accept Credit Card** off until you have checked a real settlement.
 - **Export GL Codes** also shows an "Upload the GL codes" message with a link, even when Mercury's upload page did open in a new tab.
 
