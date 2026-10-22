@@ -4,7 +4,7 @@
 app_name = "mercury_banking_integration"
 app_title = "Mercury Banking for ERPNext"
 app_publisher = "Avunu LLC"
-app_description = "Mercury Bank integration: billing, payroll ACH, bank sync, reconciliation, and GL coding"
+app_description = "Mercury bank sync, ACH payouts, invoicing and GL coding for ERPNext"
 app_email = "mail@avu.nu"
 app_license = "MIT"
 

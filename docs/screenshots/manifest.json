@@ -1,0 +1,62 @@
+[
+	{
+		"name": "bank-transactions",
+		"theme": "dark",
+		"alt": "Bank Transactions imported from Mercury Checking, the GL-coded ones and the internal transfer already reconciled",
+		"featured": true,
+		"readme": "feature",
+		"width": 2880,
+		"height": 1800,
+		"sha256": "0c3d06e94725995683b369b04df356f98789e0cbbae9db89b018323e05186ec6"
+	},
+	{
+		"name": "bank-transactions",
+		"theme": "light",
+		"alt": "Bank Transactions imported from Mercury Checking, the GL-coded ones and the internal transfer already reconciled",
+		"featured": true,
+		"readme": "feature",
+		"width": 2880,
+		"height": 1800,
+		"sha256": "22bdaf73ad362326698e8abc40d873721b0668fccabaa47aacb7048214b6b00e"
+	},
+	{
+		"name": "pay-via-mercury",
+		"theme": "dark",
+		"alt": "The Pay via Mercury preview on a payroll run: two employees ready to pay by ACH, one with an open invite and one without a Mercury payee",
+		"featured": true,
+		"readme": "feature",
+		"width": 2880,
+		"height": 1800,
+		"sha256": "f5d2daf34b677c518c2ed8696937752501a0930b0a5098ae705821a0f038df1b"
+	},
+	{
+		"name": "pay-via-mercury",
+		"theme": "light",
+		"alt": "The Pay via Mercury preview on a payroll run: two employees ready to pay by ACH, one with an open invite and one without a Mercury payee",
+		"featured": true,
+		"readme": "feature",
+		"width": 2880,
+		"height": 1800,
+		"sha256": "23c4983d44215c0bfff1be0740c496e1b961acb247b67f8ead885331d4dca62a"
+	},
+	{
+		"name": "settings",
+		"theme": "dark",
+		"alt": "Mercury Settings with sandbox credentials, automatic sync and auto journal entries turned on, and the Mercury menu open",
+		"featured": true,
+		"readme": "hero",
+		"width": 2880,
+		"height": 1800,
+		"sha256": "85020458d64436b6ec1229e9fab1cdff25e754d5623d27170c311ad4a1caa4cc"
+	},
+	{
+		"name": "settings",
+		"theme": "light",
+		"alt": "Mercury Settings with sandbox credentials, automatic sync and auto journal entries turned on, and the Mercury menu open",
+		"featured": true,
+		"readme": "hero",
+		"width": 2880,
+		"height": 1800,
+		"sha256": "4a0e06b3ea74e0a325b026c899eb3ddccb21c24a329f20417ab12b99b76bf334"
+	}
+]

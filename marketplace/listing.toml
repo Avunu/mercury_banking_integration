@@ -1,0 +1,10 @@
+# The app's registry listing (docs/app-standards/marketplace.md); frappe-listing check validates it.
+schema = 1
+title = "Mercury Banking for ERPNext"
+tagline = "Mercury bank sync, ACH payouts, invoicing and GL coding for ERPNext"
+type = "integration"
+category = "Integrations"
+categories = ["Accounting", "Banking"]
+website = "https://avunu.net/open-source/mercury_banking_integration/"
+documentation = "https://docs.avunu.net/mercury-banking-integration/"
+apps_screen = false
