@@ -47,7 +47,7 @@
 		"readme": "hero",
 		"width": 2880,
 		"height": 1800,
-		"sha256": "57aba9f86cf2f267e9faa87bf5081fac0912a7894b9e2c8792b73951d4f2a46c"
+		"sha256": "85020458d64436b6ec1229e9fab1cdff25e754d5623d27170c311ad4a1caa4cc"
 	},
 	{
 		"name": "settings",
@@ -57,6 +57,6 @@
 		"readme": "hero",
 		"width": 2880,
 		"height": 1800,
-		"sha256": "3d05061325fb562454f3041758f6468f3d24517e76dc093f455d1a8b293cdece"
+		"sha256": "4a0e06b3ea74e0a325b026c899eb3ddccb21c24a329f20417ab12b99b76bf334"
 	}
 ]

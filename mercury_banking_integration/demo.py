@@ -117,6 +117,7 @@ EMPLOYEES = (
 	("Daniel", "Kim", "daniel.kim@example.com", "", 2410.85),
 )
 PAYROLL_ENTRY = "HR-PRUN-DEMO-00001"
+DEMO_TOKEN = "secret-token:demo-sandbox"
 
 
 def _transaction_id(index: int) -> str:
@@ -213,9 +214,9 @@ def _configure(company: str, today: datetime.date) -> None:
 			"alert_recipients": "finance@example.com",
 		}
 	)
-	set_encrypted_password(
-		"Mercury Settings", "Mercury Settings", "secret-token:demo-sandbox", "sandbox_api_token"
-	)
+	set_encrypted_password("Mercury Settings", "Mercury Settings", DEMO_TOKEN, "sandbox_api_token")
+	# Saving the form leaves asterisks in the field; without them it shows as empty.
+	_set_settings({"sandbox_api_token": "*" * len(DEMO_TOKEN)})
 
 
 def _configure_ar_and_payouts(company: str) -> None:

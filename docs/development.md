@@ -32,7 +32,7 @@ frappe-test        # the tests, the way CI runs them, with the coverage gate
 
 `client/` mirrors Mercury's official Go SDK (mercury-go): Pydantic v2 models, retries on 408, 429 and 5xx with `Retry-After` honoured, cursor pagination, enum values read as plain strings so a new value never breaks parsing, and idempotency keys sent in the request body. Mercury signs amounts with negative meaning money out, the opposite of Plaid.
 
-The tests that need no site (`tests/test_client.py`, `tests/test_webhook_signature.py`) use `UnitTestCase`; the rest are integration tests. Every test answers Mercury's HTTP calls in-process with `responses` (`tests/utils.py`), so a request with no registered answer fails instead of reaching the bank.
+The tests that need no site (`tests/test_client.py`, `tests/test_webhook_signature.py`, `tests/test_gl_codes.py`) use `UnitTestCase`; the rest are integration tests. Every test answers Mercury's HTTP calls in-process with `responses` (`tests/utils.py`), so a request with no registered answer fails instead of reaching the bank.
 
 ## Design notes
 

@@ -33,7 +33,7 @@ It is for finance teams on ERPNext, payments and HRMS whose bank is Mercury. Eac
 
 ## Features
 
-- **Bank sync.** _Sync Accounts_ creates the `Mercury` Bank and a Bank Account (with its GL account) for every active Mercury account, or adopts an existing Bank Account with the same account number (or the same name under the `Mercury` bank). Posted transactions are imported hourly as submitted Bank Transactions, and _Backfill Transactions_ imports a chosen number of days. Pending transactions can be kept as drafts. Later changes in Mercury (posting date, amount, failed or cancelled) are applied to the Bank Transaction; one that is already reconciled is left alone and an alert is sent.
+- **Bank sync.** _Sync Accounts_ creates the `Mercury` Bank and a Bank Account (with its GL account) for every active Mercury account, or adopts an existing Bank Account with the same account number (or the same name under the `Mercury` bank). Posted transactions are imported hourly as submitted Bank Transactions, and _Backfill Transactions_ imports a chosen number of days. Pending transactions can be kept as drafts. Later changes in Mercury are applied to the Bank Transaction: a new posting date is written to it, and a changed amount or a failed or cancelled transaction cancels it (and re-imports it with the new amount). If it is already reconciled, an amount or status change is left alone and an alert is sent instead.
 - **Live updates.** A signed webhook endpoint and a 15-minute poll of Mercury's events API both feed the same handler, and _Replay Events_ runs the last few hours again. Every event is recorded once as an Integration Request.
 - **Automatic journal entries.** A transaction that carries a Mercury GL code is booked as a Journal Entry against the ERPNext account of the same name and reconciled with its Bank Transaction. Split transactions get one line per GL code, and a line on a payable or receivable account gets the Employee or Supplier linked to the Mercury counterparty as its party. The transaction's attachments are copied to the Bank Transaction and the Journal Entry. A daily sweep books transactions that were coded after they were synced.
 - **Internal transfers.** A transfer between two Mercury accounts is booked as one Bank Entry and reconciled on both accounts.
@@ -78,7 +78,7 @@ The app requires ERPNext, payments and HRMS on the same site.
 
 ## Configuration
 
-Open **Mercury Settings** (a System Manager or Accounts Manager can edit it):
+Open **Mercury Settings**. A System Manager or Accounts Manager can edit it; **Register Webhook** and **Replay Events** are for a System Manager only.
 
 1. Set the **Company** and an **API Token** (or tick **Use Sandbox** and set a **Sandbox API Token**), then tick **Enabled**. Saving checks the token against Mercury.
 2. **Mercury → Sync Accounts** creates or adopts the Bank Accounts. The company needs a Bank group account in its chart of accounts.

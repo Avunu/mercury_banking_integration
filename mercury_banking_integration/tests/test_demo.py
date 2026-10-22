@@ -6,12 +6,18 @@
 from __future__ import annotations
 
 import datetime
+from typing import TYPE_CHECKING, cast
 
 import frappe
 
 from mercury_banking_integration import demo
 from mercury_banking_integration.sync.accounts import get_bank_account_name
 from mercury_banking_integration.tests.utils import COMPANY, MercuryTestCase
+
+if TYPE_CHECKING:
+	from mercury_banking_integration.mercury_integration.doctype.mercury_settings.mercury_settings import (
+		MercurySettings,
+	)
 
 CTX = {"today": datetime.date(2026, 3, 13), "seed": 1, "company": COMPANY, "erpnext_demo": False}
 
@@ -52,6 +58,9 @@ class TestDemo(MercuryTestCase):
 			frappe.db.get_single_value("Mercury Settings", "ar_destination_bank_account"), checking
 		)
 		self.assertTrue(frappe.db.exists("Payment Gateway Account", {"payment_gateway": "Mercury"}))
+		settings = cast("MercurySettings", frappe.get_doc("Mercury Settings"))
+		self.assertEqual(settings.get("sandbox_api_token"), "*" * len(demo.DEMO_TOKEN))  # shows as saved
+		self.assertEqual(settings.get_api_token(), demo.DEMO_TOKEN)
 		self.assertEqual(
 			frappe.db.count("Salary Slip", {"payroll_entry": demo.PAYROLL_ENTRY, "docstatus": 1}),
 			len(demo.EMPLOYEES),
