@@ -21,6 +21,6 @@ jobs:
   docs:
     permissions:
       contents: read # checkout
-    uses: Avunu/site-docs/.github/workflows/check-docs.yml@e8aa2979d84a312318e8edfc230c6b62ed196f81 # 2026-10-16
+    uses: Avunu/site-docs/.github/workflows/check-docs.yml@a4b7738498153ee55adcbc2090256dbf221c9e55 # 2026-10-16
     with:
       path: mercury-banking-integration
