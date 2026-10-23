@@ -21,7 +21,8 @@ export default {
 			name: "settings",
 			route: "/app/mercury-settings",
 			alt: "Mercury Settings with sandbox credentials, automatic sync and auto journal entries turned on, and the Mercury menu open",
-			waitForFn: 'window.cur_frm && cur_frm.doctype === "Mercury Settings" && cur_frm.doc.enabled === 1',
+			waitForFn:
+				'window.cur_frm && cur_frm.doctype === "Mercury Settings" && cur_frm.doc.enabled === 1',
 			actions: [{ waitFor: GROUP }, { click: `${GROUP} > button` }, { wait: 500 }],
 			mask: [".frappe-timestamp"],
 			readme: "hero",

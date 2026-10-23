@@ -31,26 +31,38 @@ frappe.ui.form.on("Payment Entry", {
 			() => {
 				// @ts-expect-error format_currency is a frappe global (number_format.js:145) frappe-types 16.5.0 does not declare
 				const amount = format_currency(doc.paid_amount, doc.paid_from_account_currency || "USD");
-				frappe.confirm(__("Send {0} to {1} via Mercury ACH?", [amount, doc.party_name || doc.party]), () => {
-					frappe
-						.call("mercury_banking_integration.payouts.vendor.pay_payment_entry_via_mercury", {
-							payment_entry: doc.name,
-						})
-						.then((/** @type {import("frappe-types").FrappeResponse<PayoutResult>} */ response) => {
-							const result = response.message || {};
-							if (result.sent || result.pending_approval) {
-								frappe.show_alert({
-									message: result.sent
-										? __("Payment sent: {0}", [result.sent])
-										: __("Queued for approval in Mercury"),
-									indicator: "green",
-								});
-							} else {
-								frappe.msgprint(result.failed || result.skipped || __("No action taken"));
-							}
-							frm.reload_doc();
-						});
-				});
+				frappe.confirm(
+					__("Send {0} to {1} via Mercury ACH?", [amount, doc.party_name || doc.party]),
+					() => {
+						frappe
+							.call(
+								"mercury_banking_integration.payouts.vendor.pay_payment_entry_via_mercury",
+								{
+									payment_entry: doc.name,
+								},
+							)
+							.then(
+								(
+									/** @type {import("frappe-types").FrappeResponse<PayoutResult>} */ response,
+								) => {
+									const result = response.message || {};
+									if (result.sent || result.pending_approval) {
+										frappe.show_alert({
+											message: result.sent
+												? __("Payment sent: {0}", [result.sent])
+												: __("Queued for approval in Mercury"),
+											indicator: "green",
+										});
+									} else {
+										frappe.msgprint(
+											result.failed || result.skipped || __("No action taken"),
+										);
+									}
+									frm.reload_doc();
+								},
+							);
+					},
+				);
 			},
 			__("Mercury"),
 		);
