@@ -1,5 +1,14 @@
 # Changelog
 
+## [16.0.1](https://github.com/Avunu/mercury_banking_integration/compare/v16.0.0...v16.0.1) (2026-10-24)
+
+
+### Bug Fixes
+
+* **payouts:** offer Pay via Mercury again for a duplicate-blocked payment ([#25](https://github.com/Avunu/mercury_banking_integration/issues/25)) ([ea9566d](https://github.com/Avunu/mercury_banking_integration/commit/ea9566df90db2bb171047e9df16c1bd47d34ae76))
+* **payroll:** register the payout progress handlers once per form ([#26](https://github.com/Avunu/mercury_banking_integration/issues/26)) ([d23e606](https://github.com/Avunu/mercury_banking_integration/commit/d23e606e8dfd749e6f5ae8a4ee61023b46221e19))
+* **settings:** stop Export GL Codes reporting an opened tab as blocked ([#24](https://github.com/Avunu/mercury_banking_integration/issues/24)) ([5382312](https://github.com/Avunu/mercury_banking_integration/commit/5382312b0a1420e2aba4b17559f6ef56b8a2fbc5))
+
 ## [16.0.0](https://github.com/Avunu/mercury_banking_integration/compare/v0.0.1...v16.0.0) (2026-10-20)
 
 
