@@ -63,10 +63,6 @@ It is for finance teams on ERPNext, payments and HRMS whose bank is Mercury. Eac
 
 ## Installation
 
-On Frappe Cloud, install Mercury Banking for ERPNext from the [Frappe marketplace](https://cloud.frappe.io/marketplace/apps/mercury_banking_integration).
-
-On a bench of your own:
-
 ```bash
 bench get-app https://github.com/Avunu/mercury_banking_integration --branch version-16
 bench --site <site> install-app mercury_banking_integration
