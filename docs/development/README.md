@@ -22,14 +22,14 @@ frappe-test
 
 ## Commands
 
-| Command                             | What it does                                                                                     |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `frappe-test`                       | The Python tests on a fresh site, with the coverage gate (`fail_under` in `pyproject.toml`, 97%) |
-| `frappe-test --reuse-site`          | The same tests against the dev shell's site, without rebuilding it                               |
-| `prek run --all-files`              | Every pre-commit hook: ruff, ssort, oxlint, oxfmt, Frappe's checks and the rest                  |
-| `yarn check`                        | `oxfmt --check`, `oxlint` and `tsc --build` over the form scripts                                |
-| `yarn lint:py`, `yarn typecheck:py` | ruff and ty over the Python code, pinned in `tools/uv.lock`                                      |
-| `frappe-demo`                       | Loads the demo data from `mercury_banking_integration/demo.py`                                   |
+| Command                             | What it does                                                                                                                                                        |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `frappe-test`                       | The Python tests with the coverage gate (`fail_under` in `pyproject.toml`, 97%), then the testmap and composition checks; `--ci` runs exactly what `ci / test` runs |
+| `frappe-test --reuse-site`          | The same tests against the dev shell's site, without rebuilding it                                                                                                  |
+| `prek run --all-files`              | Every pre-commit hook: ruff, ssort, oxlint, oxfmt, Frappe's checks and the rest                                                                                     |
+| `yarn check`                        | `oxfmt --check`, `oxlint` and `tsc --build` over the form scripts                                                                                                   |
+| `yarn lint:py`, `yarn typecheck:py` | ruff and ty over the Python code, pinned in `tools/uv.lock`                                                                                                         |
+| `frappe-demo`                       | Loads the demo data from `mercury_banking_integration/demo.py`                                                                                                      |
 
 The form scripts in `mercury_banking_integration/public/js/` are plain JavaScript with JSDoc types, checked by TypeScript against [frappe-types](https://github.com/Avunu/frappe-types). There is no bundle to build.
 
@@ -53,7 +53,7 @@ The tests are in `mercury_banking_integration/tests/`. None of them reaches Merc
 
 ## Continuous integration and releases
 
-`.github/workflows/ci.yml` is managed by frappe-nix and runs on every pull request, every push to `main` and once a day, on the self-hosted runners. Its gates are `ci / lint` (the pre-commit hooks), `ci / typecheck`, `ci / test` (`frappe-test` with coverage) and `ci / marketplace` (the checks of `marketplace/listing.toml`). `pr-policy.yml` checks a pull request's base, title and commits, `nightly.yml` runs the integration suites each night, and `deps.yml` relocks after a Dependabot flake bump.
+`.github/workflows/ci.yml` is managed by frappe-nix and runs on every pull request, every push to `main` and once a day, on the self-hosted runners. Its gates are `ci / lint` (the pre-commit hooks), `ci / typecheck`, `ci / test` (`frappe-test` with coverage) and `ci / marketplace` (the checks of `marketplace/listing.toml`). `pr-policy.yml` checks a pull request's base, title and commits, `nightly.yml` runs the integration tests, the screenshots, the link check and the duplication check each night, and `deps.yml` relocks and auto-merges dependency pull requests, with a daily sweep and a weekly Python relock.
 
 `release.yml` runs release-please. Merging conventional commits to `main` opens a release pull request that bumps the version in `package.json` and `mercury_banking_integration/__init__.py` and writes `CHANGELOG.md`; merging that publishes the GitHub release.
 

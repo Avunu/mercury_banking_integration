@@ -30,7 +30,7 @@ On submit the app:
 - Creates the Mercury invoice: dated today, due on the Payment Request's date or today if that has passed, with one line that carries the **Subject** and the grand total. The invoice number is the Sales Invoice's name when the request is for a Sales Invoice (followed by the Payment Request's name if another request for that invoice already has a Mercury invoice), or else the Payment Request's name. The **Message**, without its formatting, goes to the customer as the invoice memo.
 - Stores the invoice in **Mercury Invoice ID** and the pay page in ERPNext's **Payment URL**, and adds a comment.
 
-If Mercury refuses the invoice, the Payment Request is still submitted, without a pay link. An alert says so, and an hourly job keeps trying; when it succeeds and the **Invoice Email Sender** is `ERP`, it sends the payment email and comments on the request. A System Manager or Accounts Manager can also try at once with **Mercury → Recreate Mercury Invoice** on the Payment Request, which appears while it has no Mercury invoice.
+If Mercury refuses the invoice, the Payment Request is still submitted, without a pay link. An alert says so, and an hourly job keeps trying; when it succeeds and the **Invoice Email Sender** is `ERP`, it sends the payment email and comments on the request. A System Manager or Accounts Manager can also try at once with **Mercury → Recreate Mercury Invoice** on the Payment Request, which appears while it has no Mercury invoice. That button creates the invoice and its pay link but sends no ERPNext email (with `Mercury` as sender, Mercury still emails its invoice), so with `ERP` as sender use ERPNext's **Resend Payment Email** on the Payment Request afterwards.
 
 ### Who emails the customer
 

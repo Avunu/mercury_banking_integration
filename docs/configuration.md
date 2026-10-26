@@ -69,7 +69,7 @@ This section has no fields. It explains that Mercury GL codes map to ERPNext acc
 | **Auto Reconcile Internal Transfers** | Books a Bank Entry for each transfer between two Mercury accounts and reconciles both sides. It works whether or not **Enable Auto Journal Entries** is ticked.                  | On      |
 | **Default Cost Center**               | The cost center for income and expense lines. Only non-group cost centers of the company can be picked. Empty, the company's default cost center is used when it is not a group. |         |
 
-The first four and **Default Cost Center** are shown only when **Enable Auto Journal Entries** is ticked.
+**Require Attachment**, **Maximum Amount**, **Daily Backfill (Days)** and **Default Cost Center** are shown only when **Enable Auto Journal Entries** is ticked.
 
 ### Accounts Receivable Gateway
 
@@ -88,23 +88,25 @@ Shown fields depend on **Enable AR Gateway**.
 
 ### Overdue Reminders
 
-Shown when **Enable AR Gateway** is ticked.
+Shown when **Enable AR Gateway** is ticked. **Reminder Interval (Days)** and **Maximum Reminders** are shown only when **Send Overdue Reminders** is ticked.
 
 | Field                        | What it does                                                          | Default |
 | ---------------------------- | --------------------------------------------------------------------- | ------- |
 | **Send Overdue Reminders**   | Re-sends the Payment Request email for overdue unpaid invoices daily. | On      |
-| **Reminder Interval (Days)** | The least number of days between two reminders.                       | 7       |
-| **Maximum Reminders**        | How many reminders a Payment Request gets in all.                     | 3       |
+| **Reminder Interval (Days)** | The least number of days between two reminders. Zero means 7.         | 7       |
+| **Maximum Reminders**        | How many reminders a Payment Request gets in all. Zero means 3.       | 3       |
 
 ### Payouts
 
 | Field                            | What it does                                                                                                    | Default          |
 | -------------------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------- |
-| **Enable Payouts**               | Turns on **Pay via Mercury**, payee invites and payout tracking.                                                | Off              |
+| **Enable Payouts**               | Turns on **Pay via Mercury**, the approval poll, the daily invite check and payout reconciliation.              | Off              |
 | **Payout Mode**                  | `Request Approval` queues each payment in Mercury for a second user to approve. `Direct Send` sends it at once. | Request Approval |
 | **Auto Reconcile Payouts**       | Reconciles each payout's Bank Transaction with its Payment Entry or payroll Journal Entry.                      | On               |
 | **Payroll Funding Bank Account** | The Mercury Bank Account payroll is paid from.                                                                  |                  |
 | **Vendor Funding Bank Account**  | The Mercury Bank Account supplier payments are paid from.                                                       |                  |
+
+The other fields are shown only when **Enable Payouts** is ticked. The payee buttons on Employee and Supplier work without it: they need only **Enabled**.
 
 ### Notifications
 

@@ -22,7 +22,7 @@ Mercury's API cannot create GL codes, so you upload them in Mercury.
 2. The browser downloads a CSV with one account name per line and no header, the format Mercury's upload takes. Every enabled, non-group Liability, Income, Expense and Equity account of the **Company** is in it. Asset accounts are left out, because the bank side of each entry is the Bank Account itself.
 3. A new tab opens Mercury's [GL codes page](https://app.mercury.com/accounting/mapping/gl-codes). Upload the file there. If the browser blocked the tab, a message gives the link instead.
 
-An account name that two accounts share, or that contains a comma, a quotation mark or a line break, cannot match a GL code exactly. Those names are left out of the file and listed under **Some accounts cannot be exported**; rename the accounts to include them.
+An account name that two accounts share, that contains a comma, a quotation mark or a line break, or that starts or ends with a space, cannot match a GL code exactly. Those names are left out of the file and listed under **Some accounts cannot be exported**; rename the accounts to include them.
 
 Export and upload again after you add or rename accounts.
 
@@ -62,7 +62,7 @@ bench --site <SITE_NAME> execute mercury_banking_integration.sync.gl_codes.reeva
 
 A transfer between two Mercury accounts arrives as two Bank Transactions, a withdrawal on one account and a deposit on the other. With **Auto Reconcile Internal Transfers** ticked (the default), the app books one Journal Entry with the **Entry Type** Bank Entry, crediting the source bank's GL account and debiting the destination's, and reconciles it with both Bank Transactions. The entry is dated on the withdrawal's date and carries the withdrawal's Mercury id as its reference.
 
-Mercury does not link the two sides. The app reads the last four digits at the end of each side's counterparty name, which Mercury sets to the other account, to find the counter account, then looks there for the one unreconciled transfer in the opposite direction, of the same amount, within 3 days. The first side to sync waits; the second books the pair. If more than one candidate fits, nothing is booked and an alert asks you to reconcile it by hand.
+Mercury does not link the two sides. The app reads the last four digits at the end of each side's counterparty name, which Mercury sets to the other account, to find the counter account, then looks there for a transfer in the opposite direction, of the same amount, within 3 days. When several fit, the one on the same date is taken. The first side to sync waits; the second books the pair. If several candidates fit and none or more than one is on the same date, nothing is booked and an alert asks you to reconcile it by hand. Nothing is booked either when one of the two sides is already reconciled.
 
 This works whether or not **Enable Auto Journal Entries** is ticked.
 

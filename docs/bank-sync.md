@@ -19,7 +19,7 @@ In **Mercury Settings**, choose **Mercury → Sync Accounts**. The app lists you
 
 1. Skips it when a Bank Account already carries its **Mercury Account ID**.
 2. Otherwise adopts an existing Bank Account that has the same account number (the last four digits or more are enough, for numbers an earlier integration stored masked), or the same name under the `Mercury` bank. Adopting writes the **Mercury Account ID**, corrects the account and routing numbers from Mercury, and re-enables the Bank Account.
-3. Otherwise creates a Bank Account named after the account's nickname, under a `Mercury` Bank (created the first time), with a GL account of the same name under the company's Bank group account. When two accounts share a nickname, the second gets the last four digits of its number added.
+3. Otherwise creates a Bank Account named after the account's nickname, under a `Mercury` Bank (created the first time), with a GL account of the same name under the company's Bank group account (an existing Bank ledger account of that name is reused). When two accounts share a nickname, the second gets the last four digits of its number added.
 
 A Mercury account that is archived or deleted is never adopted or created; if a Bank Account is still linked to it, that Bank Account is disabled. A message then says how many Bank Accounts were created, adopted, already linked and disabled, and names the ones adopted.
 
@@ -73,7 +73,7 @@ Once a day the app checks the webhook in Mercury. If Mercury turned it off after
 
 ## The event log
 
-Every event is recorded once as an **Integration Request** with the **Service** `Mercury`, the event id as **Request ID**, and the channel (`Webhook`, `Poll` or `Replay`) as **Request Description**. Its status is `Queued` until the handler runs, then `Completed` (linked to the Bank Transaction it touched) or `Failed` with the error. Failures also go to the Error Log. Log Settings controls how long Integration Requests are kept.
+Every event is recorded once as an **Integration Request** with the **Service** `Mercury`, the event id as **Request ID**, and the channel (`Webhook`, `Poll` or `Replay`) as **Request Description**. Its status is `Queued` until the handler runs, then `Completed` (linked to the Bank Transaction it touched) or `Failed` with the error. Failures also go to the Error Log. Log Settings controls how long Integration Requests are kept: 90 days unless you change it.
 
 Payout attempts are logged the same way, with the description `Payout`: see [Payouts](payouts.md#payout-statuses).
 
