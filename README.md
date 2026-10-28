@@ -15,6 +15,7 @@ Mercury bank sync, ACH payouts, invoicing and GL coding for ERPNext
 [![Latest release](https://img.shields.io/github/v/release/Avunu/mercury_banking_integration)](https://github.com/Avunu/mercury_banking_integration/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](license.txt)
 [![Frappe v16](https://img.shields.io/badge/Frappe-v16-blue)](https://github.com/frappe/frappe/tree/version-16)
+[![Documentation](https://img.shields.io/badge/docs-docs.avunu.net-blue)](https://docs.avunu.net/mercury-banking-integration/)
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/settings-dark.webp">
@@ -117,6 +118,7 @@ The full list, and the errors the app raises with their fixes, are in [docs/trou
 
 ## Support
 
+- Documentation: [docs.avunu.net/mercury-banking-integration/](https://docs.avunu.net/mercury-banking-integration/)
 - Bug reports and questions: [GitHub issues](https://github.com/Avunu/mercury_banking_integration/issues)
 - E-mail: <mail@avu.nu>
 
