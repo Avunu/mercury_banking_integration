@@ -191,6 +191,21 @@ class TestTransactionSync(MercuryTestCase):
 		self.assertEqual(self.alert.call_count, 2)
 		self.assertEqual(frappe.db.get_value("Bank Transaction", name, "docstatus"), 1)
 
+	def test_the_locked_section_is_its_own_transaction(self):
+		"""A job waiting on the lock must see the holder's Bank Transaction, booking included.
+
+		Mercury's create and update events for one transaction are handled in parallel;
+		without a commit on both sides of the lock each inserted its own copy.
+		"""
+		steps: list[str] = []
+		self.commit.side_effect = lambda: steps.append("commit")
+		self._patch(
+			"mercury_banking_integration.sync.auto_journal.evaluate",
+			side_effect=lambda *_: steps.append("book"),
+		)
+		transactions.upsert_transaction(txn())
+		self.assertEqual(steps, ["commit", "book", "commit"])
+
 	def test_unmapped_account_is_ignored(self):
 		self.assertIsNone(transactions.upsert_transaction(txn(accountId="unknown")))
 

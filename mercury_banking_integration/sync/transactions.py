@@ -31,6 +31,9 @@ if TYPE_CHECKING:
 
 SYNC_OVERLAP_DAYS = 3
 DEFAULT_BACKFILL_MONTHS = 12
+# The lock spans the auto-journal booking, which refetches the transaction and
+# downloads its attachments (30s request timeout each).
+TXN_LOCK_TIMEOUT = 120
 
 
 def _bank_account_for(txn: MercuryTransaction) -> str | None:
@@ -145,13 +148,24 @@ def _handle_submitted_mutation(existing: frappe._dict, txn: MercuryTransaction, 
 
 
 def upsert_transaction(txn: MercuryTransaction) -> str | None:
-	"""Create/update the Bank Transaction for a Mercury transaction. Idempotent."""
+	"""Create/update the Bank Transaction for a Mercury transaction. Idempotent.
+
+	Mercury emits a create and one or more update events per transaction, and the
+	jobs for them (plus the hourly sync) run concurrently. The filelock only orders
+	them: under REPEATABLE READ a waiting job reads its own, older snapshot, and the
+	holder's insert stays invisible until the holder's job commits — so each job
+	inserted (and booked) its own Bank Transaction. The locked section is therefore
+	its own database transaction, committed on entry for a fresh snapshot and on
+	exit to publish the result, and it covers the transfer and auto-journal booking
+	so that the next job finds the transaction already handled.
+	"""
 	bank_account = _bank_account_for(txn)
 	if not bank_account:
 		return None
 
 	settings = get_settings()
-	with filelock(f"mercury_txn_{txn.id}", timeout=30):
+	with filelock(f"mercury_txn_{txn.id}", timeout=TXN_LOCK_TIMEOUT):
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit -- fresh snapshot under the lock, see the docstring
 		existing = cast(
 			"frappe._dict | None",
 			frappe.db.get_value(
@@ -185,14 +199,15 @@ def upsert_transaction(txn: MercuryTransaction) -> str | None:
 		else:
 			name = _handle_submitted_mutation(existing, txn, bank_account)
 
-	if name and frappe.db.get_value("Bank Transaction", name, "docstatus") == 1:
-		from mercury_banking_integration.sync.auto_journal import evaluate
-		from mercury_banking_integration.sync.transfers import reconcile_internal_transfer
+		if name and frappe.db.get_value("Bank Transaction", name, "docstatus") == 1:
+			from mercury_banking_integration.sync.auto_journal import evaluate
+			from mercury_banking_integration.sync.transfers import reconcile_internal_transfer
 
-		# internal transfers reconcile into a Bank Entry between the two accounts;
-		# everything else follows the categorized auto-journal path
-		reconcile_internal_transfer(name, txn)
-		evaluate(name, txn)
+			# internal transfers reconcile into a Bank Entry between the two accounts;
+			# everything else follows the categorized auto-journal path
+			reconcile_internal_transfer(name, txn)
+			evaluate(name, txn)
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit -- publish before the next job takes the lock
 	return name
 
 
