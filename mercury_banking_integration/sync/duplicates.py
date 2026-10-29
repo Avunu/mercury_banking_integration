@@ -30,7 +30,7 @@ Bank Transaction is. Idempotent; dry-run by default:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, NamedTuple, cast
 
 import frappe
 from frappe.query_builder import DocType
@@ -47,6 +47,15 @@ if TYPE_CHECKING:
 SAVEPOINT = "mercury_duplicate"
 
 Voucher = tuple[str, str]
+
+
+class Unwound(NamedTuple):
+	"""What unwinding one Mercury transaction's copies did (or, in a dry run, would do)."""
+
+	survivor: str
+	cancelled: list[str]
+	journal_entries: list[str]
+	review: list[str]
 
 
 def _duplicate_groups() -> dict[str, list[frappe._dict]]:
@@ -81,6 +90,10 @@ def _payments(bank_transaction: str) -> list[frappe._dict]:
 	)
 
 
+def _voucher(payment: frappe._dict) -> Voucher:
+	return str(payment.payment_document), str(payment.payment_entry)
+
+
 def _clearance_date(voucher: Voucher):
 	doctype, name = voucher
 	if not frappe.get_meta(doctype).has_field("clearance_date"):
@@ -105,14 +118,14 @@ def _cancel_copy(copy: frappe._dict, own_journals: list[str], shared: list[Vouch
 			frappe.db.set_value(doctype, name, "clearance_date", clearance_date, update_modified=False)
 
 
-def _unwind_group(transaction_id: str, group: list[frappe._dict], dry_run: bool) -> frappe._dict:
+def _unwind_group(transaction_id: str, group: list[frappe._dict], dry_run: bool) -> Unwound:
 	payments = {str(row.name): _payments(str(row.name)) for row in group}
 	survivor = next((row for row in group if payments[str(row.name)]), None) or next(
 		(row for row in group if row.docstatus == 1), group[0]
 	)
-	kept: set[Voucher] = {(p.payment_document, p.payment_entry) for p in payments[str(survivor.name)]}
+	kept = {_voucher(payment) for payment in payments[str(survivor.name)]}
 
-	result = frappe._dict(survivor=survivor, cancelled=[], journal_entries=[], review=[])
+	result = Unwound(survivor=str(survivor.name), cancelled=[], journal_entries=[], review=[])
 	for copy in group:
 		if copy.name == survivor.name:
 			continue
@@ -120,7 +133,7 @@ def _unwind_group(transaction_id: str, group: list[frappe._dict], dry_run: bool)
 		shared: list[Voucher] = []
 		foreign = False
 		for payment in payments[str(copy.name)]:
-			voucher = (payment.payment_document, payment.payment_entry)
+			voucher = _voucher(payment)
 			if voucher in kept:
 				shared.append(voucher)
 			elif (
@@ -186,7 +199,7 @@ def remove_duplicate_bank_transactions(dry_run: bool = True) -> dict:
 			frappe.log_error(title=f"Mercury duplicate cleanup failed for {transaction_id}")
 			failed.append(transaction_id)
 			continue
-		cancelled.extend(f"{name} (kept {result.survivor.name})" for name in result.cancelled)
+		cancelled.extend(f"{name} (kept {result.survivor})" for name in result.cancelled)
 		journal_entries.extend(result.journal_entries)
 		needs_review.extend(result.review)
 		payouts_reconciled.extend(settled)
