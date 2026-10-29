@@ -165,7 +165,7 @@ def upsert_transaction(txn: MercuryTransaction) -> str | None:
 
 	settings = get_settings()
 	with filelock(f"mercury_txn_{txn.id}", timeout=TXN_LOCK_TIMEOUT):
-		frappe.db.commit()  # fresh snapshot: see the docstring
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit -- fresh snapshot under the lock, see the docstring
 		existing = cast(
 			"frappe._dict | None",
 			frappe.db.get_value(
@@ -207,7 +207,7 @@ def upsert_transaction(txn: MercuryTransaction) -> str | None:
 			# everything else follows the categorized auto-journal path
 			reconcile_internal_transfer(name, txn)
 			evaluate(name, txn)
-		frappe.db.commit()  # publish before the next job takes the lock
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit -- publish before the next job takes the lock
 	return name
 
 
