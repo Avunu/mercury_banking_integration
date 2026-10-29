@@ -16,8 +16,9 @@ for transfers, but each side's ``counterparty_name`` is the *other* account's
 nickname ending in its last four account-number digits (e.g. "Mercury Checking
 ••4101"); that pins the exact counter account (removing same-amount/same-day
 cross-account ambiguity), and the counter side is then the lone unreconciled
-``internalTransfer`` on that account with the opposite direction, equal amount,
-and same date.
+``internalTransfer`` on that account that names this side's account back, with
+the opposite direction, equal amount, and same date. A leg that stays ambiguous
+is flagged with a comment and alerted once, not on every re-sync.
 
 The heavy lifting reuses the core bank-reconciliation primitives
 (``create_journal_entry_bts`` books the two-leg JE and reconciles the first
@@ -53,6 +54,10 @@ if TYPE_CHECKING:
 UUID_SQL = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
 COUNTER_DATE_WINDOW_DAYS = 3
 BT_FIELDS = ("name", "date", "bank_account", "deposit", "withdrawal", "bank_party_name", "transaction_id")
+AMBIGUOUS_NOTE = (
+	"Not auto-reconciled: more than one Mercury internal transfer matches as the counter-side."
+	" Reconcile it manually."
+)
 
 # The opposite leg on the counter account: same amount in the other direction, within
 # the date window. One statement per direction, so no SQL is assembled at run time.
@@ -115,6 +120,9 @@ def _find_counter_side(
 	counter = accounts.get(counter_key) if counter_key else None
 	if not counter:
 		return None, "no-counter-account"
+	own_key = next(
+		(key for key, account in accounts.items() if account.bank_account == bt.bank_account), None
+	)
 
 	want_deposit = flt(bt.withdrawal) > 0  # if this side paid out, the other received
 	amount = flt(bt.withdrawal) or flt(bt.deposit)
@@ -134,8 +142,14 @@ def _find_counter_side(
 			as_dict=True,
 		),
 	)
+	# the counter leg names this leg's account back: a same-amount transfer into the
+	# counter account from a third account is not this one's other side
+	candidates = [c for c in candidates if _last4(c.bank_party_name) == own_key]
 	if not candidates:
 		return None, "pending"
+	if len(candidates) > 1:
+		# a leg already booked into another pair is out of the running
+		candidates = [c for c in candidates if not _is_reconciled(str(c.name))] or candidates
 	if len(candidates) > 1:
 		exact = [c for c in candidates if str(c.date) == str(bt.date)]
 		if len(exact) != 1:
@@ -282,7 +296,16 @@ def reconcile_internal_transfer(bank_transaction: str, txn: MercuryTransaction) 
 		)
 		return None
 
-	if result.status == "ambiguous":
+	# the hourly sync re-reads this leg for days: flag it on the Bank Transaction and alert once
+	if result.status == "ambiguous" and not frappe.db.exists(
+		"Comment",
+		{
+			"reference_doctype": "Bank Transaction",
+			"reference_name": bank_transaction,
+			"content": AMBIGUOUS_NOTE,
+		},
+	):
+		frappe.get_doc("Bank Transaction", bank_transaction).add_comment("Comment", text=AMBIGUOUS_NOTE)
 		notify_failure(
 			f"Ambiguous internal transfer for {bank_transaction}",
 			f"Mercury transfer <b>{txn.id}</b> has more than one candidate counter-side."

@@ -6,3 +6,4 @@
 # Patches added in this section will be executed after doctypes are migrated
 mercury_banking_integration.patches.v1_1.remove_category_sync
 mercury_banking_integration.patches.v1_2.set_auto_journal_backfill_days
+mercury_banking_integration.patches.v1_3.remove_duplicate_bank_transactions
