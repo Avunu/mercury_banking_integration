@@ -11,7 +11,7 @@ For license information, please see license.txt-->
 
 Mercury bank sync, ACH payouts, invoicing and GL coding for ERPNext
 
-[![CI](https://github.com/Avunu/mercury_banking_integration/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Avunu/mercury_banking_integration/actions/workflows/ci.yml)
+[![CI](https://github.com/Avunu/mercury_banking_integration/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/Avunu/mercury_banking_integration/actions/workflows/ci.yml)
 [![Latest release](https://img.shields.io/github/v/release/Avunu/mercury_banking_integration)](https://github.com/Avunu/mercury_banking_integration/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](license.txt)
 [![Frappe v16](https://img.shields.io/badge/Frappe-v16-blue)](https://github.com/frappe/frappe/tree/version-16)

@@ -41,7 +41,6 @@ docstring-code-format = true
 schema = 1
 profile = "github:Avunu/frappe-standards-profile/main"
 frappe-major = 16
-integration-branch = "main"
 siblings = ["erpnext", "payments", "hrms"]
 
 [tool.ty.environment]
