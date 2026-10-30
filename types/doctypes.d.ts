@@ -2528,7 +2528,7 @@ declare global {
 			bom_creator?: string | null;
 			/** BOM Creator Item · Data */
 			bom_creator_item?: string | null;
-			/** Track Semi Finished Goods · Check */
+			/** Produce an Item at Each Operation · Check */
 			track_semi_finished_goods?: 0 | 1;
 			/** Default Source Warehouse · Link → Warehouse */
 			default_source_warehouse?: string | null;
@@ -2638,6 +2638,8 @@ declare global {
 			amount?: number | null;
 			/** Do Not Explode · Check */
 			do_not_explode?: 0 | 1;
+			/** BOM No · Link → BOM */
+			bom_no?: string | null;
 			/** Instruction · Small Text */
 			instruction?: string | null;
 			/** Base Amount · Currency */
@@ -2799,13 +2801,13 @@ declare global {
 			set_cost_based_on_bom_qty?: 0 | 1;
 			/** Workstation Type · Link → Workstation Type */
 			workstation_type?: string | null;
-			/** FG / Semi FG Item · Link → Item */
+			/** Output Item · Link → Item */
 			finished_good?: string | null;
-			/** BOM No · Link → BOM */
+			/** Output Item BOM · Link → BOM */
 			bom_no?: string | null;
-			/** Qty to Produce · Float */
+			/** Output Qty · Float */
 			finished_good_qty?: number | null;
-			/** Is Final Finished Good · Check */
+			/** Last Step · Check */
 			is_final_finished_good?: 0 | 1;
 			/** WIP Warehouse · Link → Warehouse */
 			wip_warehouse?: string | null;
@@ -5376,6 +5378,8 @@ declare global {
 			use_serial_batch_fields?: 0 | 1;
 			/** Distributed Discount Amount · Currency */
 			distributed_discount_amount?: number | null;
+			/** Additional Discount per Stock Unit · Currency */
+			mapped_additional_discount_amount?: number | null;
 			/** Qty (Company) · Float */
 			company_total_stock?: number | null;
 			/** Against Pick List · Link → Pick List */
@@ -8645,8 +8649,6 @@ declare global {
 			is_grouped_asset?: 0 | 1;
 			/** Allow Negative Stock · Check */
 			allow_negative_stock?: 0 | 1;
-			/** Production Capacity · Int */
-			production_capacity?: number | null;
 			/** Purchase Tax Withholding Category · Link → Tax Withholding Category */
 			purchase_tax_withholding_category?: string | null;
 			/** Sales Tax Withholding Category · Link → Tax Withholding Category */
@@ -9263,10 +9265,8 @@ declare global {
 			backflush_from_wip_warehouse?: 0 | 1;
 			/** Is Paused · Check */
 			is_paused?: 0 | 1;
-			/** Track Semi Finished Goods · Check */
+			/** Produce an Item at Each Operation · Check */
 			track_semi_finished_goods?: 0 | 1;
-			/** Operation Row Number · Select */
-			operation_row_number?: string | null;
 			/** Secondary Items · Table → Job Card Secondary Item */
 			secondary_items: FrappeChildRow<"Job Card Secondary Item">[];
 			/** Pending qty · Float */
@@ -11457,6 +11457,8 @@ declare global {
 			due_date?: string | null;
 			/** Item Name · Data */
 			item_name?: string | null;
+			/** Currency · Link → Currency */
+			currency?: string | null;
 			/** Outstanding Amount · Currency */
 			outstanding_amount?: number | null;
 			/** Quantity · Data */
@@ -12311,6 +12313,8 @@ declare global {
 			use_serial_batch_fields?: 0 | 1;
 			/** Distributed Discount Amount · Currency */
 			distributed_discount_amount?: number | null;
+			/** Additional Discount per Stock Unit · Currency */
+			mapped_additional_discount_amount?: number | null;
 		}
 
 		/**
@@ -12660,6 +12664,8 @@ declare global {
 			picked_qty?: number | null;
 			/** Packed Qty · Float */
 			packed_qty?: number | null;
+			/** Received Qty · Float */
+			received_qty?: number | null;
 			/** Serial and Batch Bundle · Link → Serial and Batch Bundle */
 			serial_and_batch_bundle?: string | null;
 			/** Use Serial No / Batch Fields · Check */
@@ -14860,7 +14866,7 @@ declare global {
 			total_billable_amount?: number | null;
 			/** Total Billed Amount (via Sales Invoice) · Currency */
 			total_billed_amount?: number | null;
-			/** Total Consumed Material Cost (via Stock Entry) · Currency */
+			/** Total Consumed Material Cost · Currency */
 			total_consumed_material_cost?: number | null;
 			/** Default Cost Center · Link → Cost Center */
 			cost_center?: string | null;
@@ -15700,6 +15706,8 @@ declare global {
 			sales_incoming_rate?: number | null;
 			/** Distributed Discount Amount · Currency */
 			distributed_discount_amount?: number | null;
+			/** Additional Discount per Stock Unit · Currency */
+			mapped_additional_discount_amount?: number | null;
 			/** Tax Withholding Category · Link → Tax Withholding Category */
 			tax_withholding_category?: string | null;
 			/** Delivered by Supplier · Check */
@@ -16080,6 +16088,8 @@ declare global {
 			job_card?: string | null;
 			/** Distributed Discount Amount · Currency */
 			distributed_discount_amount?: number | null;
+			/** Additional Discount per Stock Unit · Currency */
+			mapped_additional_discount_amount?: number | null;
 			/** Subcontracted Quantity · Float */
 			subcontracted_qty?: number | null;
 		}
@@ -16467,6 +16477,8 @@ declare global {
 			stock_uom_rate?: number | null;
 			/** Delivery Note Item · Data */
 			delivery_note_item?: string | null;
+			/** Delivery Note Packed Item · Data */
+			delivery_note_packed_item?: string | null;
 			/** Margin Type · Select */
 			margin_type?: "Percentage" | "Amount" | "" | null;
 			/** Margin Rate or Amount · Float */
@@ -16511,6 +16523,8 @@ declare global {
 			sales_incoming_rate?: number | null;
 			/** Distributed Discount Amount · Currency */
 			distributed_discount_amount?: number | null;
+			/** Additional Discount per Stock Unit · Currency */
+			mapped_additional_discount_amount?: number | null;
 			/** Amount Difference with Purchase Invoice · Currency */
 			amount_difference_with_purchase_invoice?: number | null;
 		}
@@ -17363,6 +17377,8 @@ declare global {
 			has_alternative_item?: 0 | 1;
 			/** Distributed Discount Amount · Currency */
 			distributed_discount_amount?: number | null;
+			/** Additional Discount per Stock Unit · Currency */
+			mapped_additional_discount_amount?: number | null;
 			/** Qty (Company) · Float */
 			company_total_stock?: number | null;
 			/** Ordered Qty · Float */
@@ -18812,6 +18828,8 @@ declare global {
 			use_serial_batch_fields?: 0 | 1;
 			/** Distributed Discount Amount · Currency */
 			distributed_discount_amount?: number | null;
+			/** Additional Discount per Stock Unit · Currency */
+			mapped_additional_discount_amount?: number | null;
 			/** Qty (Company) · Float */
 			company_total_stock?: number | null;
 			/** POS Invoice Item · Data */
@@ -19287,6 +19305,8 @@ declare global {
 			is_stock_item?: 0 | 1;
 			/** Distributed Discount Amount · Currency */
 			distributed_discount_amount?: number | null;
+			/** Additional Discount per Stock Unit · Currency */
+			mapped_additional_discount_amount?: number | null;
 			/** Qty (Company) · Float */
 			company_total_stock?: number | null;
 			/** Cost Center · Link → Cost Center */
@@ -20429,7 +20449,7 @@ declare global {
 			/** Company · Link → Company */
 			company?: string | null;
 			/** Status · Select */
-			status?: "Draft" | "Queued" | "In Progress" | "Completed" | "Failed" | "Cancelled" | "" | null;
+			status?: "Draft" | "Queued" | "In Progress" | "Completed" | "Outdated" | "Failed" | "Cancelled" | "" | null;
 			/** From Date · Date */
 			from_date?: string | null;
 			/** To Date · Date */
@@ -22310,6 +22330,8 @@ declare global {
 			cost_center?: string | null;
 			/** Distributed Discount Amount · Currency */
 			distributed_discount_amount?: number | null;
+			/** Additional Discount per Stock Unit · Currency */
+			mapped_additional_discount_amount?: number | null;
 			/** Margin Type · Select */
 			margin_type?: "Percentage" | "Amount" | "" | null;
 			/** Margin Rate or Amount · Float */
@@ -23994,7 +24016,7 @@ declare global {
 			production_plan_sub_assembly_item?: string | null;
 			/** Process Loss Qty · Float */
 			process_loss_qty?: number | null;
-			/** Track Semi Finished Goods · Check */
+			/** Produce an Item at Each Operation · Check */
 			track_semi_finished_goods?: 0 | 1;
 			/** Reserve Stock · Check */
 			reserve_stock?: 0 | 1;
@@ -24074,6 +24096,8 @@ declare global {
 			amount?: number | null;
 			/** Returned Qty · Float */
 			returned_qty?: number | null;
+			/** Subcontracted Qty · Float */
+			subcontracted_qty?: number | null;
 			/** Operation Row Id · Int */
 			operation_row_id?: number | null;
 			/** Stock UOM · Link → UOM */
@@ -24099,6 +24123,8 @@ declare global {
 			operation?: string | null;
 			/** BOM · Link → BOM */
 			bom?: string | null;
+			/** BOM Operation · Data */
+			bom_operation?: string | null;
 			/** Operation Description · Text Editor */
 			description?: string | null;
 			/** Completed Qty · Float */
@@ -24133,9 +24159,9 @@ declare global {
 			workstation_type?: string | null;
 			/** Process Loss Qty · Float */
 			process_loss_qty?: number | null;
-			/** BOM No (For Semi-Finished Goods) · Link → BOM */
+			/** Output Item BOM · Link → BOM */
 			bom_no?: string | null;
-			/** Semi Finished Goods / Finished Goods · Link → Item */
+			/** Output Item · Link → Item */
 			finished_good?: string | null;
 			/** WIP WH · Link → Warehouse */
 			wip_warehouse?: string | null;
