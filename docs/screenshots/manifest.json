@@ -7,7 +7,7 @@
 		"readme": "feature",
 		"width": 2880,
 		"height": 1800,
-		"sha256": "0c3d06e94725995683b369b04df356f98789e0cbbae9db89b018323e05186ec6"
+		"sha256": "7112bfaa6b98731f438d1090af1d8911f65e5d3ee7e7f3947d068b0ecf2bd0cd"
 	},
 	{
 		"name": "bank-transactions",
@@ -17,7 +17,7 @@
 		"readme": "feature",
 		"width": 2880,
 		"height": 1800,
-		"sha256": "22bdaf73ad362326698e8abc40d873721b0668fccabaa47aacb7048214b6b00e"
+		"sha256": "d33f340a0cde3d76478f314087eea0521d8699f05e7b3f6b12ebebb219c1dcd6"
 	},
 	{
 		"name": "pay-via-mercury",
@@ -37,7 +37,7 @@
 		"readme": "feature",
 		"width": 2880,
 		"height": 1800,
-		"sha256": "23c4983d44215c0bfff1be0740c496e1b961acb247b67f8ead885331d4dca62a"
+		"sha256": "d392172602da447e71d97d84c349c2b1a75044b3e427b0693caf7c2455066008"
 	},
 	{
 		"name": "settings",
