@@ -8,6 +8,18 @@ app_description = "Mercury bank sync, ACH payouts, invoicing and GL coding for E
 app_email = "mail@avu.nu"
 app_license = "MIT"
 
+# Frappe's About dialog takes the logo from here. not_listed keeps the app off the apps screen.
+# app_logo_url would change the site's own logo.
+add_to_apps_screen = [
+	{
+		"name": "mercury_banking_integration",
+		"logo": "/assets/mercury_banking_integration/images/mercury_banking_integration-logo.svg",
+		"title": "Mercury Banking for ERPNext",
+		"route": "/desk",
+		"has_permission": "mercury_banking_integration.apps_screen.not_listed",
+	}
+]
+
 required_apps = ["erpnext", "payments", "hrms"]
 
 # regenerate doctype controller type annotations on migrate (strong typing)
