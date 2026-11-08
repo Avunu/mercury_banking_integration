@@ -95,9 +95,11 @@ function mercury_payroll_dialog(frm) {
 					});
 				},
 			});
-			// an HTML field is a control (get_field's union also covers sections and columns)
-			const preview = /** @type {frappe.ui.form.Control} */ (dialog.get_field("preview_html"));
-			preview.$wrapper.html(render_mercury_preview(rows));
+			// get_field's union also covers sections and columns; this field is an HTML control
+			const preview = dialog.get_field("preview_html");
+			if (preview instanceof frappe.ui.form.ControlHTML) {
+				preview.$wrapper.html(render_mercury_preview(rows));
+			}
 			dialog.show();
 		});
 }
@@ -115,7 +117,6 @@ function render_mercury_preview(rows) {
 			const warning = row.warning
 				? `<div class="text-danger small">${frappe.utils.escape_html(row.warning)}</div>`
 				: "";
-			// @ts-expect-error format_currency is a frappe global (number_format.js:145) frappe-types 16.5.0 does not declare
 			const amount = format_currency(row.amount, "USD");
 			const recipient =
 				row.recipient_status === "Active"

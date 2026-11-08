@@ -83,7 +83,6 @@ function export_gl_codes() {
 				frappe.msgprint(__("No accounts are eligible for export."));
 				return;
 			}
-			// @ts-expect-error open_url_post is a frappe global (urllib.js:48) frappe-types 16.5.0 does not declare
 			open_url_post("/api/method/mercury_banking_integration.sync.gl_codes.export_gl_codes", {});
 			open_gl_code_mapping(message.count);
 		});
