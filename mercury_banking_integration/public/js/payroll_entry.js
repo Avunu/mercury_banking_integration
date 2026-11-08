@@ -115,7 +115,6 @@ function render_mercury_preview(rows) {
 			const warning = row.warning
 				? `<div class="text-danger small">${frappe.utils.escape_html(row.warning)}</div>`
 				: "";
-			// @ts-expect-error format_currency is a frappe global (number_format.js:145) frappe-types 16.5.0 does not declare
 			const amount = format_currency(row.amount, "USD");
 			const recipient =
 				row.recipient_status === "Active"

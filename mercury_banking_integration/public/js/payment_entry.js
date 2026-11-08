@@ -29,7 +29,6 @@ frappe.ui.form.on("Payment Entry", {
 		frm.add_custom_button(
 			__("Pay via Mercury"),
 			() => {
-				// @ts-expect-error format_currency is a frappe global (number_format.js:145) frappe-types 16.5.0 does not declare
 				const amount = format_currency(doc.paid_amount, doc.paid_from_account_currency || "USD");
 				frappe.confirm(__("Send {0} to {1} via Mercury ACH?", [amount, doc.party_name || doc.party]), () => {
 					frappe
