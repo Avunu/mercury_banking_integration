@@ -281,7 +281,7 @@ def reconcile_internal_transfer(bank_transaction: str, txn: MercuryTransaction) 
 
 	try:
 		result = _reconcile_pair(bt, _account_by_last4())
-	except (frappe.QueryDeadlockError, frappe.QueryTimeoutError):
+	except frappe.QueryDeadlockError, frappe.QueryTimeoutError:
 		# InnoDB rolls back the *whole* transaction when it picks a deadlock victim, which
 		# here includes the Bank Transaction this leg was just inserted as. Swallowing it
 		# would carry on, commit and mark the event Completed with the leg gone, and send
