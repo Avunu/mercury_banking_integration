@@ -327,6 +327,18 @@ class TestInternalTransfers(MercuryTestCase):
 		self.assertEqual(transfers.reconcile_existing_transfers(dry_run=False)["failed"], [_out_leg, in_leg])
 		self.assertEqual(log_error.call_count, 3)
 
+	def test_a_deadlock_propagates_instead_of_alerting(self):
+		# the deadlock victim's transaction is already rolled back, so carrying on would
+		# commit without the leg; the job must fail and be re-read, not alert "reconcile manually"
+		_out_leg, in_leg = self.transfer_legs(out_id=80, in_id=81)
+		for error in (frappe.QueryDeadlockError, frappe.QueryTimeoutError):
+			self._patch("mercury_banking_integration.sync.transfers._book_transfer", side_effect=error())
+			log_error = self._patch("frappe.log_error")
+			with self.assertRaises(error):
+				transfers.reconcile_internal_transfer(in_leg, self.txn(81, 500))
+			log_error.assert_not_called()
+		self.notify.assert_not_called()
+
 	def test_only_posted_internal_transfers_when_enabled(self):
 		self.assertIsNone(
 			transfers.reconcile_internal_transfer(
