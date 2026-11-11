@@ -261,8 +261,8 @@ def reconcile_internal_transfer(bank_transaction: str, txn: MercuryTransaction) 
 
 	No-op unless it's a posted internal transfer and the feature is enabled. The
 	first side to sync finds no counter yet (``pending``) and defers; the second
-	side books the JE and reconciles both. Failures alert and never raise into
-	the sync loop.
+	side books the JE and reconciles both. Booking failures alert and never raise into
+	the sync loop; a database deadlock or lock timeout does raise (see below).
 	"""
 	if (txn.kind or "") != "internalTransfer" or not txn.is_posted:
 		return None
@@ -281,6 +281,13 @@ def reconcile_internal_transfer(bank_transaction: str, txn: MercuryTransaction) 
 
 	try:
 		result = _reconcile_pair(bt, _account_by_last4())
+	except frappe.QueryDeadlockError, frappe.QueryTimeoutError:
+		# InnoDB rolls back the *whole* transaction when it picks a deadlock victim, which
+		# here includes the Bank Transaction this leg was just inserted as. Swallowing it
+		# would carry on, commit and mark the event Completed with the leg gone, and send
+		# a "reconcile manually" alert for something a retry fixes. Let it fail the job:
+		# the next event or the hourly account sync re-reads the leg and books it.
+		raise
 	except Exception:
 		frappe.log_error(
 			title=f"Mercury transfer reconcile failed for {bank_transaction}",
