@@ -1,5 +1,17 @@
 # Changelog
 
+## [16.1.0](https://github.com/Avunu/mercury_banking_integration/compare/v16.0.1...v16.1.0) (2026-11-11)
+
+
+### Features
+
+* show the app's logo in the About dialog, on frappe-nix 2.4.0 ([#69](https://github.com/Avunu/mercury_banking_integration/issues/69)) ([d3d01d9](https://github.com/Avunu/mercury_banking_integration/commit/d3d01d96c852c4542682fccee97dd2c437db6374))
+
+
+### Bug Fixes
+
+* **sync:** let deadlocks fail the transfer reconcile instead of alerting ([#81](https://github.com/Avunu/mercury_banking_integration/issues/81)) ([b1d5132](https://github.com/Avunu/mercury_banking_integration/commit/b1d5132dd85640c493f8f424dcb216f39a7f1a3d))
+
 ## [16.0.1](https://github.com/Avunu/mercury_banking_integration/compare/v16.0.0...v16.0.1) (2026-10-29)
 
 
