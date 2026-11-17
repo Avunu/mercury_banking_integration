@@ -253,13 +253,21 @@ def register_webhook_endpoint() -> str:
 
 	frappe.db.set_single_value(
 		"Mercury Settings",
-		{"webhook_endpoint_id": webhook.id, "webhook_status": webhook.status or "active"},
+		{
+			"webhook_endpoint_id": webhook.id,
+			"webhook_status": webhook.status or "active",
+			# the real secret lives in __Auth; Frappe's Password fields show "*****" in the form
+			"webhook_secret": "*****",
+		},
 	)
 	set_encrypted_password("Mercury Settings", "Mercury Settings", webhook.secret, "webhook_secret")
 	from mercury_banking_integration.mercury_integration.doctype.mercury_settings.mercury_settings import (
 		WEBHOOK_SECRET_CACHE_KEY,
 	)
 
+	# Commit before asking Mercury to verify: its verification event hits the webhook endpoint in a
+	# separate request, which must already see the new secret (and must not cache an empty one).
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit -- verification delivery is a separate request
 	cast("RedisWrapper", frappe.cache)().delete_value(WEBHOOK_SECRET_CACHE_KEY)
 
 	try:
