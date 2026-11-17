@@ -231,7 +231,7 @@ def poll_events() -> None:
 		)
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def register_webhook_endpoint() -> str:
 	"""Create (or recreate) the Mercury webhook endpoint and store its secret.
 
