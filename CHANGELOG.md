@@ -1,5 +1,12 @@
 # Changelog
 
+## [16.1.1](https://github.com/Avunu/mercury_banking_integration/compare/v16.1.0...v16.1.1) (2026-11-21)
+
+
+### Bug Fixes
+
+* show the webhook secret in Mercury Settings and commit before verifying ([#89](https://github.com/Avunu/mercury_banking_integration/issues/89)) ([a0694fb](https://github.com/Avunu/mercury_banking_integration/commit/a0694fbd44e08d932787afa62596fb81e0da0976))
+
 ## [16.1.0](https://github.com/Avunu/mercury_banking_integration/compare/v16.0.1...v16.1.0) (2026-11-11)
 
 
